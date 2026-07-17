@@ -20,6 +20,7 @@ public class CineMax {
             String scelta = scanner.nextLine();
 
             switch (scelta) {
+
                 case "1":
                     eseguiLogin();
                     break;

@@ -29,6 +29,9 @@ public class Utente implements Serializable {
 
     // Getters
     public String getUsername() { return username; }
+    public String getCognome() { return cognome; }
+    public String getDataNascita() { return dataNascita; }
+    public String getLuogoDomicilio() { return luogoDomicilio; }
     public String getPasswordCifrata() { return passwordCifrata; }
     public Ruolo getRuolo() { return ruolo; }
     public String getNome() { return nome; }
