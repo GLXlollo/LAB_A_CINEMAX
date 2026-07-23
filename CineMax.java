@@ -1,8 +1,10 @@
+import java.util.List;
 import java.util.Scanner;
 
 public class CineMax {
     private static Scanner scanner = new Scanner(System.in);
     private static GestoreUtenti gestoreUtenti = new GestoreUtenti();
+    private static GestoreProiezioni gestoreProiezioni = new GestoreProiezioni();
     private static Utente utenteLoggato = null;
 
     public static void main(String[] args) {
@@ -80,7 +82,44 @@ public class CineMax {
         System.out.println("\n--- Accesso Guest ---");
         System.out.print("Inserisci il titolo del film da cercare: ");
         String titolo = scanner.nextLine();
-        System.out.println("Cerco il film '" + titolo + "'... (funzionalità da implementare leggendo proiezioni.csv)");
+
+        List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(titolo);
+
+        if (risultati.isEmpty()) {
+            System.out.println("Nessuna proiezione trovata per il titolo: " + titolo);
+            return;
+        }
+
+        System.out.println("\nProiezioni trovate:");
+        for (int i = 0; i < risultati.size(); i++) {
+            System.out.println((i + 1) + ". " + risultati.get(i).getTitolo() + " - " + risultati.get(i).getDataOra());
+        }
+
+        System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
+        try {
+            int scelta = Integer.parseInt(scanner.nextLine());
+            if (scelta > 0 && scelta <= risultati.size()) {
+                visualizzaProiezione(risultati.get(scelta - 1));
+            } else if (scelta != 0) {
+                System.out.println("Scelta non valida.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Input non valido. Inserisci un numero.");
+        }
+    }
+
+    // Funzionalità visualizzaProiezione() richiesta dalle specifiche
+    private static void visualizzaProiezione(Proiezione p) {
+        System.out.println("\n--- Dettagli Proiezione visualizzaProiezione() ---");
+        System.out.println("Titolo: " + p.getTitolo());
+        System.out.println("Genere: " + p.getGenere());
+        System.out.println("Regista: " + p.getRegista());
+        System.out.println("Anno: " + p.getAnno());
+        System.out.println("Durata: " + p.getDurata() + " min");
+        System.out.println("Data e Ora: " + p.getDataOra());
+        System.out.println("Costo biglietto: €" + p.getCostoBiglietto());
+        System.out.println("Posti liberi: " + p.getPostiLiberi());
+        System.out.println("--------------------------------------------------");
     }
     
 }

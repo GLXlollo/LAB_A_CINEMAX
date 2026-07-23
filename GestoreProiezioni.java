@@ -60,20 +60,16 @@ public class GestoreProiezioni {
     }
 
     // Ricerca parziale per titolo (Funzionalità Guest)
-    public void cercaPerTitolo(String titoloCercato) {
-        boolean trovato = false;
+    public List<Proiezione> cercaPerTitolo(String titoloCercato) {
+        List<Proiezione> risultati = new ArrayList<>();
         String titoloLower = titoloCercato.toLowerCase();
 
         for (Proiezione p : listaProiezioni) {
             if (p.getTitolo().toLowerCase().contains(titoloLower)) {
-                System.out.println(p.toString());
-                trovato = true;
+                risultati.add(p);
             }
         }
-
-        if (!trovato) {
-            System.out.println("Nessuna proiezione trovata per il titolo: " + titoloCercato);
-        }
+        return risultati;
     }
     
     // Ritorna l'intera lista (ci servirà in seguito)
