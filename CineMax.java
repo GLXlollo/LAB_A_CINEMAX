@@ -5,11 +5,11 @@ public class CineMax {
     private static Scanner scanner = new Scanner(System.in);
     private static GestoreUtenti gestoreUtenti = new GestoreUtenti();
     private static GestoreProiezioni gestoreProiezioni = new GestoreProiezioni();
+    private static GestorePrenotazioni gestorePrenotazioni = new GestorePrenotazioni(); 
     private static Utente utenteLoggato = null;
 
     public static void main(String[] args) {
         boolean esci = false;
-
         System.out.println("=== Benvenuto in CineMax ===");
 
         while (!esci) {
@@ -22,7 +22,6 @@ public class CineMax {
             String scelta = scanner.nextLine();
 
             switch (scelta) {
-
                 case "1":
                     eseguiLogin();
                     break;
@@ -52,16 +51,107 @@ public class CineMax {
         utenteLoggato = gestoreUtenti.login(username, password);
 
         if (utenteLoggato != null) {
-            System.out.println("Login effettuato! Benvenuto " + utenteLoggato.getNome());
-
-            utenteLoggato = null; 
+            System.out.println("\nLogin effettuato! Benvenuto " + utenteLoggato.getNome());
+            
+            // Smistamento degli utenti (Specifiche pag. 7-8)
+            switch (utenteLoggato.getRuolo()) {
+                case CLIENTE:
+                    menuCliente();
+                    break;
+                case PROIEZIONISTA:
+                    System.out.println("Menu Proiezionista (da implementare)");
+                    break;
+                case BIGLIETTAIO:
+                    System.out.println("Menu Bigliettaio (da implementare)");
+                    break;
+            }
+            utenteLoggato = null; // Logout
         } else {
             System.out.println("Credenziali errate.");
         }
     }
 
+    // --- MENU CLIENTE ---
+    private static void menuCliente() {
+        boolean esci = false;
+        while (!esci) {
+            System.out.println("\n--- Area Cliente ---");
+            System.out.println("1. Cerca e prenota una proiezione");
+            System.out.println("2. Visualizza le tue prenotazioni");
+            System.out.println("0. Logout");
+            System.out.print("Scegli un'opzione: ");
+            
+            String scelta = scanner.nextLine();
+            switch (scelta) {
+                case "1":
+                    eseguiPrenotazioneCliente();
+                    break;
+                case "2":
+                    visualizzaPrenotazioniCliente();
+                    break;
+                case "0":
+                    esci = true;
+                    System.out.println("Logout in corso...");
+                    break;
+                default:
+                    System.out.println("Opzione non valida.");
+            }
+        }
+    }
+
+    private static void eseguiPrenotazioneCliente() {
+        System.out.print("Inserisci il titolo del film da cercare: ");
+        String titolo = scanner.nextLine();
+
+        List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(titolo);
+
+        if (risultati.isEmpty()) {
+            System.out.println("Nessuna proiezione trovata.");
+            return;
+        }
+
+        System.out.println("\nProiezioni trovate:");
+        for (int i = 0; i < risultati.size(); i++) {
+            System.out.println((i + 1) + ". " + risultati.get(i).getTitolo() + " - " + risultati.get(i).getDataOra() + " (Posti liberi: " + risultati.get(i).getPostiLiberi() + ")");
+        }
+
+        System.out.print("\nScegli la proiezione per vedere i dettagli e prenotare (o 0 per annullare): ");
+        try {
+            int scelta = Integer.parseInt(scanner.nextLine());
+            if (scelta > 0 && scelta <= risultati.size()) {
+                Proiezione p = risultati.get(scelta - 1);
+                visualizzaProiezione(p); 
+                
+                System.out.print("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ");
+                int numBiglietti = Integer.parseInt(scanner.nextLine());
+                
+                if (numBiglietti > 0) {
+                    gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
+                } else if (numBiglietti != 0) {
+                    System.out.println("Numero di biglietti non valido.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Input non valido. Inserisci un numero.");
+        }
+    }
+
+    private static void visualizzaPrenotazioniCliente() {
+        System.out.println("\n--- Le tue Prenotazioni ---");
+        List<Prenotazione> miePrenotazioni = gestorePrenotazioni.getPrenotazioniPerUtente(utenteLoggato.getUsername());
+        
+        if (miePrenotazioni.isEmpty()) {
+            System.out.println("Non hai ancora effettuato prenotazioni.");
+        } else {
+            for (Prenotazione p : miePrenotazioni) {
+                System.out.println(p.toString());
+            }
+        }
+    }
+
+    // --- MENU GUEST ED EXTRA ---
     private static void eseguiRegistrazione() {
-        System.out.println("\n--- Registrazione Cliente registraCliente() ---");
+        System.out.println("\n--- Registrazione Cliente ---");
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
         System.out.print("Cognome: ");
@@ -86,7 +176,7 @@ public class CineMax {
         List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(titolo);
 
         if (risultati.isEmpty()) {
-            System.out.println("Nessuna proiezione trovata per il titolo: " + titolo);
+            System.out.println("Nessuna proiezione trovata.");
             return;
         }
 
@@ -108,9 +198,8 @@ public class CineMax {
         }
     }
 
-    // Funzionalità visualizzaProiezione() richiesta dalle specifiche
     private static void visualizzaProiezione(Proiezione p) {
-        System.out.println("\n--- Dettagli Proiezione visualizzaProiezione() ---");
+        System.out.println("\n--- Dettagli Proiezione ---");
         System.out.println("Titolo: " + p.getTitolo());
         System.out.println("Genere: " + p.getGenere());
         System.out.println("Regista: " + p.getRegista());
@@ -119,7 +208,6 @@ public class CineMax {
         System.out.println("Data e Ora: " + p.getDataOra());
         System.out.println("Costo biglietto: €" + p.getCostoBiglietto());
         System.out.println("Posti liberi: " + p.getPostiLiberi());
-        System.out.println("--------------------------------------------------");
+        System.out.println("---------------------------");
     }
-    
 }
