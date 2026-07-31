@@ -16,6 +16,7 @@ public class Proiezione implements Serializable {
     private final int POSTI_TOTALI = 200;
     private int postiPrenotati = 0;
 
+
     public Proiezione(String dataOra, String titolo, String genere, String regista, 
                       int anno, int durata, int etaMinima, double costoBiglietto) {
         this.dataOra = dataOra;

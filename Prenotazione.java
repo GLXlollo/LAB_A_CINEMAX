@@ -11,7 +11,6 @@ public class Prenotazione implements Serializable {
     private int numeroBiglietti;
     private double costoUnitario;
     private double costoTotale;
-
     // Costruttore per creare una NUOVA prenotazione (genera il codice univoco)
     public Prenotazione(String usernameCliente, String titoloFilm, String dataOraProiezione, 
                         int numeroBiglietti, double costoUnitario) {
