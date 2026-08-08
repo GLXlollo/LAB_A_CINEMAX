@@ -6,7 +6,7 @@ import java.util.List;
 public class GestoreUtenti {
     // Specifica: file denominato Utenti
     private static final String FILE_UTENTI = "Utenti.csv"; 
-    private static final String DELIMITATORE = ";";
+    private static final String DELIMITATORE = ",";
     private List<Utente> listaUtenti;
 
     public GestoreUtenti() {

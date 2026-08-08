@@ -8,7 +8,7 @@ import java.util.List;
 public class GestoreProiezioni {
     // Il nome del file indicato dalle specifiche
     private static final String FILE_PROIEZIONI = "proiezioni.csv"; 
-    private static final String DELIMITATORE = ";"; // Modifica se il file fornito usa la virgola
+    private static final String DELIMITATORE = ","; // Modifica se il file fornito usa la virgola
     private List<Proiezione> listaProiezioni;
 
     public GestoreProiezioni() {
@@ -45,7 +45,7 @@ public class GestoreProiezioni {
                         int anno = Integer.parseInt(dati[4].trim());
                         int durata = Integer.parseInt(dati[5].trim());
                         int etaMinima = Integer.parseInt(dati[6].trim());
-                        double costo = Double.parseDouble(dati[7].trim().replace(",", "."));
+                        double costo = Double.parseDouble(dati[7].trim());
 
                         Proiezione p = new Proiezione(dataOra, titolo, genere, regista, anno, durata, etaMinima, costo);
                         listaProiezioni.add(p);
