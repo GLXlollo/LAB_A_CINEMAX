@@ -2,8 +2,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public class GestoreProiezioni {
     // Il nome del file indicato dalle specifiche
@@ -35,22 +39,45 @@ public class GestoreProiezioni {
                 }
 
                 String[] dati = linea.split(DELIMITATORE);
-                // Controllo che ci siano tutti gli 8 campi previsti
-                if (dati.length >= 8) {
+                /*Controllo che ci siano tutti gli 8 campi previsti
+                Usare la virgola come delimitatore espone il metodo a creare
+                più campi dell'array dati del necessario, questo perchè 
+                in alcuni titoli di film del dataset dato è presente una virgola
+                Questo crea 1 campo in più, e fa sollevare la NumberformatException
+                come conseguenza se si utilizza dati.lenght >= 8 */
+                if (dati.length == 8) {
                     try {
                         String dataOra = dati[0].trim();
                         String titolo = dati[1].trim();
                         String genere = dati[2].trim();
                         String regista = dati[3].trim();
-                        int anno = Integer.parseInt(dati[4].trim());
-                        int durata = Integer.parseInt(dati[5].trim());
-                        int etaMinima = Integer.parseInt(dati[6].trim());
-                        double costo = Double.parseDouble(dati[7].trim());
+                        int anno = Integer.parseInt(dati[4]);
+                        int durata = Integer.parseInt(dati[5]);
+                        int etaMinima = Integer.parseInt(dati[6]);
+                        double costo = Double.parseDouble(dati[7]);
 
                         Proiezione p = new Proiezione(dataOra, titolo, genere, regista, anno, durata, etaMinima, costo);
                         listaProiezioni.add(p);
                     } catch (NumberFormatException e) {
                         System.out.println("Errore nel formato numerico di una riga in " + FILE_PROIEZIONI);
+                        System.out.println(dati[0] + dati[1]);
+                    }
+                } else if (dati.length == 9) {
+                     try {
+                        String dataOra = dati[0].trim();
+                        String titolo = dati[1].concat(dati[2]).trim(); // riunuiamo il titolo del film
+                        String genere = dati[3].trim();
+                        String regista = dati[4].trim();
+                        int anno = Integer.parseInt(dati[5]);
+                        int durata = Integer.parseInt(dati[6]);
+                        int etaMinima = Integer.parseInt(dati[7]);
+                        double costo = Double.parseDouble(dati[8]);
+
+                        Proiezione p = new Proiezione(dataOra, titolo, genere, regista, anno, durata, etaMinima, costo);
+                        listaProiezioni.add(p);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Errore nel formato numerico di una riga in " + FILE_PROIEZIONI);
+                        System.out.println(dati[0] + dati[1]);
                     }
                 }
             }
@@ -71,7 +98,33 @@ public class GestoreProiezioni {
         }
         return risultati;
     }
+
+    // Ricerca per genere (funzionalità Guest)
+    /*  Viene utilizzato contains per una ricerca più avanzata che tiene conto che l'utente
+    potrebbe non ricordarsi il titolo completo del film che cerca, tuttavia questo deve essere
+    scritto in modo corretto, il metodo non accetta errori di ortografia per semplicità */
+    public List<Proiezione> cercaPerGenere(String genereCercato) {
+        List<Proiezione> risultati = new ArrayList<>();
+        for (Proiezione p : listaProiezioni) {
+            if(p.getTitolo().toLowerCase().contains(genereCercato.toLowerCase()))
+                risultati.add(p);
+        }
+        return risultati;
+    }
     
+    // Ricerca tra 2 date (Funzionalità Guest)
+    public List<Proiezione> cercaPerData(LocalDate DataInizio, LocalDate DataFine) {
+        List<Proiezione> risultati = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Proiezione p : listaProiezioni) {
+            LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(1, 11), formatter);
+            if(l.isAfter(DataInizio) && l.isBefore(DataFine)) 
+                risultati.add(p);
+        }
+        return risultati;
+    }
+
+
     // Ritorna l'intera lista (ci servirà in seguito)
     public List<Proiezione> getListaProiezioni() {
         return listaProiezioni;
