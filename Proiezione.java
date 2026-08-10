@@ -54,6 +54,11 @@ public class Proiezione implements Serializable {
         postiPrenotati -= numeroPosti;
     }
 
+    // Metodo per permettere al proiezionista di cambiare orario
+    public void setDataOra(String nuovaDataOra) {
+        this.dataOra = nuovaDataOra;
+    }
+
     @Override
     public String toString() {
         return titolo + " (" + anno + ") - " + genere + " | Regia: " + regista + 

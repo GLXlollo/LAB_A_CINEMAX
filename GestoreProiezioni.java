@@ -6,7 +6,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 
 public class GestoreProiezioni {
@@ -128,5 +129,31 @@ public class GestoreProiezioni {
     // Ritorna l'intera lista (ci servirà in seguito)
     public List<Proiezione> getListaProiezioni() {
         return listaProiezioni;
+    }
+
+    // --- METODI PER IL PROIEZIONISTA ---
+    public void aggiungiProiezione(Proiezione p) {
+        listaProiezioni.add(p);
+        riscriviFileCSV();
+    }
+
+    public void eliminaProiezione(Proiezione p) {
+        listaProiezioni.remove(p);
+        riscriviFileCSV();
+    }
+
+    public void riscriviFileCSV() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_PROIEZIONI, false))) {
+            // Riscrivo l'intestazione
+            pw.println("DataOra,Titolo,Genere,Regista,Anno,Durata,EtaMinima,Costo"); 
+            for (Proiezione p : listaProiezioni) {
+                pw.println(p.getDataOra() + DELIMITATORE + p.getTitolo() + DELIMITATORE + 
+                           p.getGenere() + DELIMITATORE + p.getRegista() + DELIMITATORE + 
+                           p.getAnno() + DELIMITATORE + p.getDurata() + DELIMITATORE + 
+                           p.getEtaMinima() + DELIMITATORE + p.getCostoBiglietto());
+            }
+        } catch (IOException e) {
+            System.out.println("Errore nella riscrittura del file " + FILE_PROIEZIONI);
+        }
     }
 }

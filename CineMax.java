@@ -59,7 +59,7 @@ public class CineMax {
                     menuCliente();
                     break;
                 case PROIEZIONISTA:
-                    System.out.println("Menu Proiezionista (da implementare)");
+                    menuProiezionista(); // <-- MODIFICA QUI per attivare il menu
                     break;
                 case BIGLIETTAIO:
                     menuBigliettaio(); // <-- MODIFICA QUI per attivare il menu
@@ -403,5 +403,142 @@ public class CineMax {
         System.out.println("Biglietti: " + p.getNumeroBiglietti() + " | Costo unitario: €" + p.getCostoUnitario());
         System.out.println("Costo Totale: €" + p.getCostoTotale());
         System.out.println("-------------------------------------------------");
+    }
+
+    // --- MENU PROIEZIONISTA ---
+    private static void menuProiezionista() {
+        boolean esci = false;
+        while (!esci) {
+            System.out.println("\n--- Area Proiezionista ---");
+            System.out.println("1. Aggiungi una proiezione");
+            System.out.println("2. Modifica la data di una proiezione");
+            System.out.println("3. Elimina una proiezione");
+            System.out.println("0. Logout");
+            System.out.print("Scegli un'opzione: ");
+            
+            String scelta = scanner.nextLine();
+            switch (scelta) {
+                case "1": eseguiAggiungiProiezione(); break;
+                case "2": eseguiModificaProiezione(); break;
+                case "3": eseguiEliminaProiezione(); break;
+                case "0":
+                    esci = true;
+                    System.out.println("Logout in corso...");
+                    break;
+                default: System.out.println("Opzione non valida.");
+            }
+        }
+    }
+
+    private static void eseguiAggiungiProiezione() {
+        System.out.println("\n--- Aggiungi Proiezione ---");
+        System.out.print("Data e Ora (es. 2026-05-15 21:00): ");
+        String dataOra = scanner.nextLine();
+        
+        // Controllo sovrapposizione (Specifiche pag. 13)
+        for (Proiezione p : gestoreProiezioni.getListaProiezioni()) {
+            if (p.getDataOra().equals(dataOra)) {
+                System.out.println("Errore: Esiste già una proiezione in questa data e ora!");
+                return;
+            }
+        }
+        
+        try {
+            System.out.print("Titolo del film: "); String titolo = scanner.nextLine();
+            System.out.print("Genere: "); String genere = scanner.nextLine();
+            System.out.print("Regista: "); String regista = scanner.nextLine();
+            System.out.print("Anno (es. 2023): "); int anno = Integer.parseInt(scanner.nextLine());
+            System.out.print("Durata in min (es. 120): "); int durata = Integer.parseInt(scanner.nextLine());
+            System.out.print("Età minima (es. 14, usa 0 per tutti): "); int eta = Integer.parseInt(scanner.nextLine());
+            System.out.print("Costo biglietto (usa il punto per i decimali, es. 8.50): "); 
+            double costo = Double.parseDouble(scanner.nextLine());
+
+            Proiezione nuova = new Proiezione(dataOra, titolo, genere, regista, anno, durata, eta, costo);
+            gestoreProiezioni.aggiungiProiezione(nuova);
+            System.out.println("Proiezione aggiunta con successo e salvata nel palinsesto!");
+        } catch (NumberFormatException e) {
+            System.out.println("Errore d'inserimento: devi usare i numeri per Anno, Durata, Età e Costo.");
+        }
+    }
+
+    private static void eseguiModificaProiezione() {
+        System.out.print("\nInserisci il titolo del film da modificare: ");
+        String titolo = scanner.nextLine();
+        List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(titolo);
+        
+        if (risultati.isEmpty()) {
+            System.out.println("Nessuna proiezione trovata con questo titolo.");
+            return;
+        }
+
+        for (int i = 0; i < risultati.size(); i++) {
+            System.out.println((i + 1) + ". " + risultati.get(i).getTitolo() + " - " + risultati.get(i).getDataOra());
+        }
+
+        System.out.print("Scegli la proiezione da modificare (0 per annullare): ");
+        try {
+            int scelta = Integer.parseInt(scanner.nextLine());
+            if (scelta > 0 && scelta <= risultati.size()) {
+                Proiezione p = risultati.get(scelta - 1);
+                
+                // Controllo prenotazioni esistenti (Specifiche pag. 13)
+                if (haPrenotazioni(p)) {
+                    System.out.println("Errore: Non puoi modificare una proiezione che ha già delle prenotazioni attive!");
+                    return;
+                }
+                
+                System.out.print("Inserisci la nuova Data e Ora (es. 2026-05-16 21:00): ");
+                String nuovaData = scanner.nextLine();
+                p.setDataOra(nuovaData);
+                gestoreProiezioni.riscriviFileCSV();
+                System.out.println("Data della proiezione modificata con successo!");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Input non valido.");
+        }
+    }
+
+    private static void eseguiEliminaProiezione() {
+        System.out.print("\nInserisci il titolo del film da eliminare dal palinsesto: ");
+        String titolo = scanner.nextLine();
+        List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(titolo);
+        
+        if (risultati.isEmpty()) {
+            System.out.println("Nessuna proiezione trovata.");
+            return;
+        }
+
+        for (int i = 0; i < risultati.size(); i++) {
+            System.out.println((i + 1) + ". " + risultati.get(i).getTitolo() + " - " + risultati.get(i).getDataOra());
+        }
+
+        System.out.print("Scegli la proiezione da eliminare in modo definitivo (0 per annullare): ");
+        try {
+            int scelta = Integer.parseInt(scanner.nextLine());
+            if (scelta > 0 && scelta <= risultati.size()) {
+                Proiezione p = risultati.get(scelta - 1);
+                
+                // Controllo prenotazioni esistenti (Specifiche pag. 13)
+                if (haPrenotazioni(p)) {
+                    System.out.println("Errore: Non puoi eliminare una proiezione che ha già delle prenotazioni!");
+                    return;
+                }
+                
+                gestoreProiezioni.eliminaProiezione(p);
+                System.out.println("Proiezione eliminata con successo dal palinsesto!");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Input non valido.");
+        }
+    }
+
+    // Metodo di supporto per bloccare modifiche/cancellazioni se ci sono biglietti venduti
+    private static boolean haPrenotazioni(Proiezione p) {
+        for (Prenotazione pren : gestorePrenotazioni.getTutteLePrenotazioni()) {
+            if (pren.getTitoloFilm().equals(p.getTitolo()) && pren.getDataOraProiezione().equals(p.getDataOra())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
