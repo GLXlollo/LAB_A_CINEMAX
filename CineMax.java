@@ -78,23 +78,22 @@ public class CineMax {
             System.out.println("\n--- Area Cliente ---");
             System.out.println("1. Cerca e prenota una proiezione");
             System.out.println("2. Visualizza le tue prenotazioni");
+            System.out.println("3. Modifica la data di una prenotazione");
+            System.out.println("4. Cancella una prenotazione");
             System.out.println("0. Logout");
             System.out.print("Scegli un'opzione: ");
             
             String scelta = scanner.nextLine();
             switch (scelta) {
-                case "1":
-                    eseguiPrenotazioneCliente();
-                    break;
-                case "2":
-                    visualizzaPrenotazioniCliente();
-                    break;
+                case "1": eseguiPrenotazioneCliente(); break;
+                case "2": visualizzaPrenotazioniCliente(); break;
+                case "3": eseguiModificaPrenotazioneCliente(); break;
+                case "4": eseguiEliminaPrenotazioneCliente(); break;
                 case "0":
                     esci = true;
                     System.out.println("Logout in corso...");
                     break;
-                default:
-                    System.out.println("Opzione non valida.");
+                default: System.out.println("Opzione non valida.");
             }
         }
     }
@@ -146,6 +145,105 @@ public class CineMax {
             for (Prenotazione p : miePrenotazioni) {
                 System.out.println(p.toString());
             }
+        }
+    }
+
+    private static void eseguiEliminaPrenotazioneCliente() {
+        System.out.print("\nInserisci il CODICE della prenotazione da cancellare: ");
+        String codice = scanner.nextLine();
+
+        Prenotazione p = gestorePrenotazioni.getPrenotazioneByCodice(codice);
+
+        // Controllo che esista e sia del cliente attualmente loggato
+        if (p == null || !p.getUsernameCliente().equals(utenteLoggato.getUsername())) {
+            System.out.println("Errore: Prenotazione non trovata o non ti appartiene.");
+            return;
+        }
+
+        // NOTA: Da specifiche (pag. 12) andrebbe verificato che la data sia corretta rispetto a oggi
+        
+        // Prima di cancellare, dobbiamo "restituire" i posti liberi alla proiezione originale
+        for (Proiezione proj : gestoreProiezioni.getListaProiezioni()) {
+            if (proj.getTitolo().equals(p.getTitoloFilm()) && proj.getDataOra().equals(p.getDataOraProiezione())) {
+                proj.liberaPosti(p.getNumeroBiglietti());
+                break;
+            }
+        }
+
+        gestorePrenotazioni.eliminaPrenotazione(p);
+        System.out.println("Prenotazione " + codice + " eliminata con successo! I posti sono stati liberati.");
+    }
+
+    private static void eseguiModificaPrenotazioneCliente() {
+        System.out.print("\nInserisci il CODICE della prenotazione da modificare: ");
+        String codice = scanner.nextLine();
+
+        Prenotazione p = gestorePrenotazioni.getPrenotazioneByCodice(codice);
+
+        if (p == null || !p.getUsernameCliente().equals(utenteLoggato.getUsername())) {
+            System.out.println("Errore: Prenotazione non trovata o non ti appartiene.");
+            return;
+        }
+
+        System.out.println("Stai modificando il film: " + p.getTitoloFilm());
+        System.out.print("Inserisci la NUOVA data/ora che desideri (es. 2026-05-15): ");
+        String filtroData = scanner.nextLine();
+
+        // Cerchiamo le proiezioni dello STESSO film, ma filtrate per la nuova data
+        List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(p.getTitoloFilm());
+        System.out.println("\nNuove proiezioni disponibili per " + p.getTitoloFilm() + ":");
+        int count = 1;
+        for (Proiezione proj : risultati) {
+            if (proj.getDataOra().contains(filtroData)) {
+                System.out.println(count + ". " + proj.getDataOra() + " (Posti liberi: " + proj.getPostiLiberi() + ")");
+                count++;
+            }
+        }
+
+        if (count == 1) {
+            System.out.println("Nessuna nuova proiezione trovata corrispondente alla ricerca.");
+            return;
+        }
+
+        System.out.print("Scegli il numero della nuova proiezione (o 0 per annullare): ");
+        try {
+            int scelta = Integer.parseInt(scanner.nextLine());
+            if (scelta > 0 && scelta < count) {
+                // Troviamo la proiezione scelta dall'utente (aggiustando l'indice)
+                Proiezione nuovaProj = null;
+                int indiceTemporaneo = 1;
+                for (Proiezione proj : risultati) {
+                    if (proj.getDataOra().contains(filtroData)) {
+                        if (indiceTemporaneo == scelta) {
+                            nuovaProj = proj;
+                            break;
+                        }
+                        indiceTemporaneo++;
+                    }
+                }
+                
+                if (nuovaProj != null && nuovaProj.getPostiLiberi() >= p.getNumeroBiglietti()) {
+                    // 1. Liberiamo i vecchi posti
+                    for (Proiezione proj : gestoreProiezioni.getListaProiezioni()) {
+                        if (proj.getTitolo().equals(p.getTitoloFilm()) && proj.getDataOra().equals(p.getDataOraProiezione())) {
+                            proj.liberaPosti(p.getNumeroBiglietti());
+                            break;
+                        }
+                    }
+                    // 2. Occupiamo i posti nella nuova data
+                    nuovaProj.prenotaPosti(p.getNumeroBiglietti());
+                    
+                    // 3. Modifichiamo la data sulla prenotazione e salviamo il file
+                    p.setDataOraProiezione(nuovaProj.getDataOra());
+                    gestorePrenotazioni.riscriviFileCSV();
+
+                    System.out.println("Data modificata con successo!");
+                } else {
+                    System.out.println("Errore: La nuova proiezione non ha abbastanza posti.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Input non valido.");
         }
     }
 

@@ -94,4 +94,35 @@ public class GestorePrenotazioni {
     public List<Prenotazione> getTutteLePrenotazioni() {
         return listaPrenotazioni;
     }
+
+    // Recupera una specifica prenotazione tramite il suo codice
+    public Prenotazione getPrenotazioneByCodice(String codice) {
+        for (Prenotazione p : listaPrenotazioni) {
+            if (p.getCodiceUnivoco().equalsIgnoreCase(codice)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // Riscrive tutto il file (necessario dopo aver eliminato o modificato un dato in memoria)
+    public void riscriviFileCSV() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_PRENOTAZIONI, false))) {
+            pw.println("Codice;Username;TitoloFilm;DataOra;NumeroBiglietti;CostoUnitario;CostoTotale");
+            for (Prenotazione p : listaPrenotazioni) {
+                pw.println(p.getCodiceUnivoco() + DELIMITATORE + p.getUsernameCliente() + DELIMITATORE + 
+                           p.getTitoloFilm() + DELIMITATORE + p.getDataOraProiezione() + DELIMITATORE + 
+                           p.getNumeroBiglietti() + DELIMITATORE + p.getCostoUnitario() + DELIMITATORE + 
+                           p.getCostoTotale());
+            }
+        } catch (IOException e) {
+            System.out.println("Errore nella riscrittura del file Prenotazioni.csv");
+        }
+    }
+
+    // Elimina la prenotazione dalla memoria e aggiorna il file
+    public void eliminaPrenotazione(Prenotazione p) {
+        listaPrenotazioni.remove(p);
+        riscriviFileCSV();
+    }
 }

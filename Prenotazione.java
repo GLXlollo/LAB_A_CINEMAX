@@ -45,6 +45,11 @@ public class Prenotazione implements Serializable {
     public double getCostoUnitario() { return costoUnitario; }
     public double getCostoTotale() { return costoTotale; }
 
+    // Metodo per aggiornare la data in caso di modifica
+    public void setDataOraProiezione(String nuovaDataOra) { 
+        this.dataOraProiezione = nuovaDataOra; 
+    }
+
     @Override
     public String toString() {
         return "Codice: " + codiceUnivoco + " | Film: " + titoloFilm + " (" + dataOraProiezione + 
