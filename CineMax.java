@@ -62,7 +62,7 @@ public class CineMax {
                     System.out.println("Menu Proiezionista (da implementare)");
                     break;
                 case BIGLIETTAIO:
-                    System.out.println("Menu Bigliettaio (da implementare)");
+                    menuBigliettaio(); // <-- MODIFICA QUI per attivare il menu
                     break;
             }
             utenteLoggato = null; // Logout
@@ -209,5 +209,101 @@ public class CineMax {
         System.out.println("Costo biglietto: €" + p.getCostoBiglietto());
         System.out.println("Posti liberi: " + p.getPostiLiberi());
         System.out.println("---------------------------");
+    }
+
+    // --- MENU BIGLIETTAIO ---
+    private static void menuBigliettaio() {
+        boolean esci = false;
+        while (!esci) {
+            System.out.println("\n--- Area Bigliettaio ---");
+            System.out.println("1. Visualizza prenotazioni di oggi");
+            System.out.println("2. Cerca una prenotazione");
+            System.out.println("0. Logout");
+            System.out.print("Scegli un'opzione: ");
+            
+            String scelta = scanner.nextLine();
+            switch (scelta) {
+                case "1":
+                    visualizzaPrenotazioniOggi();
+                    break;
+                case "2":
+                    cercaPrenotazioneBigliettaio();
+                    break;
+                case "0":
+                    esci = true;
+                    System.out.println("Logout in corso...");
+                    break;
+                default:
+                    System.out.println("Opzione non valida.");
+            }
+        }
+    }
+
+    private static void visualizzaPrenotazioniOggi() {
+        // Pagina 8: Visualizzare le prenotazioni nella data odierna
+        System.out.print("\nInserisci la data di oggi (es. 2026-05-15): ");
+        String oggi = scanner.nextLine();
+        
+        System.out.println("\n--- Prenotazioni per il " + oggi + " ---");
+        boolean trovate = false;
+        for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
+            if (p.getDataOraProiezione().contains(oggi)) {
+                stampaDettagliPrenotazione(p);
+                trovate = true;
+            }
+        }
+        if (!trovate) {
+            System.out.println("Nessuna prenotazione trovata per oggi.");
+        }
+    }
+
+    private static void cercaPrenotazioneBigliettaio() {
+        // Pagina 11: Ricerca per codice, nome, o titolo
+        System.out.println("\n--- Cerca Prenotazione ---");
+        System.out.println("1. Per Codice Prenotazione");
+        System.out.println("2. Per Titolo film");
+        System.out.println("3. Per Nome o Cognome cliente");
+        System.out.print("Scegli il criterio: ");
+        String criterio = scanner.nextLine();
+        
+        System.out.print("Inserisci il testo da cercare: ");
+        String testo = scanner.nextLine().toLowerCase();
+        
+        boolean trovate = false;
+        for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
+            boolean match = false;
+            
+            if (criterio.equals("1") && p.getCodiceUnivoco().toLowerCase().equals(testo)) {
+                match = true;
+            } else if (criterio.equals("2") && p.getTitoloFilm().toLowerCase().contains(testo)) {
+                match = true;
+            } else if (criterio.equals("3")) {
+                Utente u = gestoreUtenti.getUtenteByUsername(p.getUsernameCliente());
+                if (u != null && (u.getNome().toLowerCase().contains(testo) || u.getCognome().toLowerCase().contains(testo))) {
+                    match = true;
+                }
+            }
+            
+            if (match) {
+                stampaDettagliPrenotazione(p);
+                trovate = true;
+            }
+        }
+        if (!trovate) {
+            System.out.println("Nessuna corrispondenza trovata.");
+        }
+    }
+
+    // Visualizzazione dettagliata della prenotazione
+    private static void stampaDettagliPrenotazione(Prenotazione p) {
+        Utente u = gestoreUtenti.getUtenteByUsername(p.getUsernameCliente());
+        String nomeCompleto = (u != null) ? (u.getNome() + " " + u.getCognome()) : "Utente Sconosciuto";
+        
+        System.out.println("\n[Codice: " + p.getCodiceUnivoco() + "]");
+        System.out.println("Cliente: " + nomeCompleto);
+        System.out.println("Film: " + p.getTitoloFilm() + " | Orario: " + p.getDataOraProiezione());
+        System.out.println("Biglietti: " + p.getNumeroBiglietti() + " | Costo unitario: €" + p.getCostoUnitario());
+        System.out.println("Costo Totale: €" + p.getCostoTotale());
+        System.out.println("-------------------------------------------------");
     }
 }

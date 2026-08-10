@@ -99,4 +99,14 @@ public class GestoreUtenti {
         System.out.println("Login fallito. Credenziali errate.");
         return null; // Login fallito
     }
+
+    // Recupera l'oggetto Utente partendo dallo username (serve al bigliettaio)
+    public Utente getUtenteByUsername(String username) {
+        for (Utente u : listaUtenti) {
+            if (u.getUsername().equals(username)) {
+                return u;
+            }
+        }
+        return null;
+    }
 }

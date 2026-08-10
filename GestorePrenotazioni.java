@@ -89,4 +89,9 @@ public class GestorePrenotazioni {
         }
         return risultato;
     }
+
+    // Restituisce l'intera lista per le ricerche del bigliettaio
+    public List<Prenotazione> getTutteLePrenotazioni() {
+        return listaPrenotazioni;
+    }
 }
