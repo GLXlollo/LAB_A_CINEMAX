@@ -131,8 +131,7 @@ public class CineMax {
                 Proiezione p = risultati.get(scelta - 1);
                 visualizzaProiezione(p); 
                 
-                System.out.print("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ");
-                int numBiglietti = Integer.parseInt(scanner.nextLine());
+                int numBiglietti = leggiInteroPositivo("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ", true);
                 
                 if (numBiglietti > 0) {
                     gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
@@ -210,8 +209,7 @@ public class CineMax {
         }
 
         System.out.println("Stai modificando il film: " + p.getTitoloFilm());
-        System.out.print("Inserisci la NUOVA data/ora che desideri (es. 2026-05-15): ");
-        String filtroData = scanner.nextLine();
+        String filtroData = leggiData("Inserisci la NUOVA data che desideri cercare");
 
         // Cerchiamo le proiezioni dello STESSO film, ma filtrate per la nuova data
         List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(p.getTitoloFilm());
@@ -479,8 +477,7 @@ public class CineMax {
 
     private static void eseguiAggiungiProiezione() {
         System.out.println("\n--- Aggiungi Proiezione ---");
-        System.out.print("Data e Ora (es. 2026-05-15 21:00): ");
-        String dataOra = scanner.nextLine();
+        String dataOra = leggiDataOra("Data e Ora della nuova proiezione");
         
         // Controllo sovrapposizione
         for (Proiezione p : gestoreProiezioni.getListaProiezioni()) {
@@ -490,22 +487,19 @@ public class CineMax {
             }
         }
         
-        try {
-            System.out.print("Titolo del film: "); String titolo = scanner.nextLine();
-            System.out.print("Genere: "); String genere = scanner.nextLine();
-            System.out.print("Regista: "); String regista = scanner.nextLine();
-            System.out.print("Anno (es. 2023): "); int anno = Integer.parseInt(scanner.nextLine());
-            System.out.print("Durata in min (es. 120): "); int durata = Integer.parseInt(scanner.nextLine());
-            System.out.print("Età minima (es. 14, usa 0 per tutti): "); int eta = Integer.parseInt(scanner.nextLine());
-            System.out.print("Costo biglietto (usa il punto per i decimali, es. 8.50): "); 
-            double costo = Double.parseDouble(scanner.nextLine());
+        System.out.print("Titolo del film: "); String titolo = scanner.nextLine();
+        System.out.print("Genere: "); String genere = scanner.nextLine();
+        System.out.print("Regista: "); String regista = scanner.nextLine();
+        
+        // Usiamo i nostri nuovi validatori infallibili!
+        int anno = leggiInteroPositivo("Anno (es. 2023): ", false);
+        int durata = leggiInteroPositivo("Durata in min (es. 120): ", false);
+        int eta = leggiInteroPositivo("Età minima (es. 14, usa 0 per tutti): ", true);
+        double costo = leggiDoublePositivo("Costo biglietto (es. 8.50): ");
 
-            Proiezione nuova = new Proiezione(dataOra, titolo, genere, regista, anno, durata, eta, costo);
-            gestoreProiezioni.aggiungiProiezione(nuova);
-            System.out.println("Proiezione aggiunta con successo e salvata nel palinsesto!");
-        } catch (NumberFormatException e) {
-            System.out.println("Errore d'inserimento: devi usare i numeri per Anno, Durata, Età e Costo.");
-        }
+        Proiezione nuova = new Proiezione(dataOra, titolo, genere, regista, anno, durata, eta, costo);
+        gestoreProiezioni.aggiungiProiezione(nuova);
+        System.out.println("Proiezione aggiunta con successo e salvata nel palinsesto!");
     }
 
     private static void eseguiModificaProiezione() {
@@ -534,8 +528,7 @@ public class CineMax {
                     return;
                 }
                 
-                System.out.print("Inserisci la nuova Data e Ora (es. 2026-05-16 21:00): ");
-                String nuovaData = scanner.nextLine();
+                String nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
                 p.setDataOra(nuovaData);
                 gestoreProiezioni.riscriviFileCSV();
                 System.out.println("Data della proiezione modificata con successo!");
@@ -628,6 +621,42 @@ public class CineMax {
                 return dataOra.format(formatter); // Restituisce la stringa perfetta
             } catch (DateTimeParseException e) {
                 System.out.println("Errore: Formato non valido. Controlla la struttura con i trattini oppure se la data e l'ora sono errate.");
+            }
+        }
+    }
+
+    // --- METODI DI SUPPORTO PER VALIDAZIONE NUMERI ---
+
+    private static int leggiInteroPositivo(String messaggio, boolean consentiZero) {
+        while (true) {
+            System.out.print(messaggio);
+            try {
+                int valore = Integer.parseInt(scanner.nextLine());
+                if (valore > 0 || (valore == 0 && consentiZero)) {
+                    return valore;
+                } else {
+                    System.out.println("Errore: Inserisci un numero " + (consentiZero ? "maggiore o uguale a zero." : "maggiore di zero."));
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Errore: Formato non valido. Inserisci un numero intero.");
+            }
+        }
+    }
+
+    private static double leggiDoublePositivo(String messaggio) {
+        while (true) {
+            System.out.print(messaggio);
+            try {
+                // .replace() aiuta gli utenti che per sbaglio scrivono 8,50 con la virgola
+                String input = scanner.nextLine().replace(",", ".");
+                double valore = Double.parseDouble(input);
+                if (valore >= 0) {
+                    return valore;
+                } else {
+                    System.out.println("Errore: Inserisci un costo maggiore o uguale a zero.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Errore: Formato non valido. Inserisci un valore numerico.");
             }
         }
     }
