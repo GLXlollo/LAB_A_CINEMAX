@@ -1,5 +1,11 @@
 import java.util.List;
 import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Scanner;
 
 public class CineMax {
     private static Scanner scanner = new Scanner(System.in);
@@ -12,7 +18,7 @@ public class CineMax {
 
         // Sincronizza i database all'avvio per ricalcolare i posti corretti
         sincronizzaPostiOccupati();
-        
+
         boolean esci = false;
         System.out.println("=== Benvenuto in CineMax ===");
 
@@ -164,7 +170,13 @@ public class CineMax {
             return;
         }
 
-        // NOTA: Da specifiche (pag. 12) andrebbe verificato che la data sia corretta rispetto a oggi
+        // Controllo: la proiezione non deve essere nel passato
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime dataProiezione = LocalDateTime.parse(p.getDataOraProiezione(), formatter);
+        if (dataProiezione.isBefore(LocalDateTime.now())) {
+            System.out.println("Errore: Non puoi cancellare una prenotazione per un film già passato o iniziato.");
+            return;
+        }
         
         // Prima di cancellare, dobbiamo "restituire" i posti liberi alla proiezione originale
         for (Proiezione proj : gestoreProiezioni.getListaProiezioni()) {
@@ -186,6 +198,14 @@ public class CineMax {
 
         if (p == null || !p.getUsernameCliente().equals(utenteLoggato.getUsername())) {
             System.out.println("Errore: Prenotazione non trovata o non ti appartiene.");
+            return;
+        }
+
+        // Controllo: la proiezione originale non deve essere nel passato
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime dataProiezione = LocalDateTime.parse(p.getDataOraProiezione(), formatter);
+        if (dataProiezione.isBefore(LocalDateTime.now())) {
+            System.out.println("Errore: Non puoi modificare una prenotazione per un film già passato o iniziato.");
             return;
         }
 
@@ -363,18 +383,20 @@ public class CineMax {
     }
 
     private static void visualizzaPrenotazioniOggi() {
-        // Pagina 8: Visualizzare le prenotazioni nella data odierna
-        System.out.print("\nInserisci la data di oggi (es. 2026-05-15): ");
-        String oggi = scanner.nextLine();
+        // Recupera la data odierna automaticamente dal sistema
+        String oggi = LocalDate.now().toString(); 
         
-        System.out.println("\n--- Prenotazioni per il " + oggi + " ---");
+        System.out.println("\n--- Prenotazioni per OGGI (" + oggi + ") ---");
         boolean trovate = false;
+        
         for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
+            // Controlla se la data/ora della proiezione contiene la data di oggi
             if (p.getDataOraProiezione().contains(oggi)) {
                 stampaDettagliPrenotazione(p);
                 trovate = true;
             }
         }
+        
         if (!trovate) {
             System.out.println("Nessuna prenotazione trovata per oggi.");
         }
@@ -460,7 +482,7 @@ public class CineMax {
         System.out.print("Data e Ora (es. 2026-05-15 21:00): ");
         String dataOra = scanner.nextLine();
         
-        // Controllo sovrapposizione (Specifiche pag. 13)
+        // Controllo sovrapposizione
         for (Proiezione p : gestoreProiezioni.getListaProiezioni()) {
             if (p.getDataOra().equals(dataOra)) {
                 System.out.println("Errore: Esiste già una proiezione in questa data e ora!");
@@ -574,6 +596,38 @@ public class CineMax {
                 if (proj.getTitolo().equals(p.getTitoloFilm()) && proj.getDataOra().equals(p.getDataOraProiezione())) {
                     proj.prenotaPosti(p.getNumeroBiglietti());
                 }
+            }
+        }
+    }
+
+    // --- METODI DI SUPPORTO PER VALIDAZIONE DATE ---
+    
+    private static String leggiData(String messaggio) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        while (true) {
+            System.out.print(messaggio + " (Formato richiesto: AAAA-MM-GG, es. 2026-05-15): ");
+            String input = scanner.nextLine();
+            try {
+                // Tenta di convertire la stringa in una data reale. Se fallisce, va nel catch.
+                LocalDate data = LocalDate.parse(input, formatter);
+                return data.toString(); // Restituisce la stringa sicura e formattata
+            } catch (DateTimeParseException e) {
+                System.out.println("Errore: Formato data non valido. Controlla la struttura con i trattini oppure se la data è errata o inesistente.");
+            }
+        }
+    }
+
+    private static String leggiDataOra(String messaggio) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        while (true) {
+            System.out.print(messaggio + " (Formato: AAAA-MM-GG HH:MM, es. 2026-05-15 21:30): ");
+            String input = scanner.nextLine();
+            try {
+                // Tenta di convertire la stringa in data+ora.
+                LocalDateTime dataOra = LocalDateTime.parse(input, formatter);
+                return dataOra.format(formatter); // Restituisce la stringa perfetta
+            } catch (DateTimeParseException e) {
+                System.out.println("Errore: Formato non valido. Controlla la struttura con i trattini oppure se la data e l'ora sono errate.");
             }
         }
     }
