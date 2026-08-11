@@ -14,8 +14,15 @@ public class GestorePrenotazioni {
 
     private void caricaPrenotazioniDaCSV() {
         File file = new File(FILE_PRENOTAZIONI);
+
         if (!file.exists()) {
-            return; 
+            try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
+                // Genera il file fisico e scrive subito la riga di intestazione
+                pw.println("Codice;Username;TitoloFilm;DataOra;NumeroBiglietti;CostoUnitario;CostoTotale");
+            } catch (IOException e) {
+                System.err.println("Errore nella creazione del file " + FILE_PRENOTAZIONI);
+            }
+            return; // Esce perché il file è appena nato ed è vuoto
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
