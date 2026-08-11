@@ -80,7 +80,7 @@ public class CineMax {
             System.out.println("2. Visualizza le tue prenotazioni");
             System.out.println("3. Modifica la data di una prenotazione");
             System.out.println("4. Cancella una prenotazione");
-            System.out.println("0. Logout");
+            System.out.println("0. Logout e torna al menu principale");
             System.out.print("Scegli un'opzione: ");
             
             String scelta = scanner.nextLine();
@@ -247,7 +247,7 @@ public class CineMax {
         }
     }
 
-    // --- MENU GUEST ED EXTRA ---
+    // --- MENU GUEST ---
     private static void eseguiRegistrazione() {
         System.out.println("\n--- Registrazione Cliente ---");
         System.out.print("Nome: ");
@@ -267,7 +267,28 @@ public class CineMax {
     }
 
     private static void menuGuest() {
-        System.out.println("\n--- Accesso Guest ---");
+        boolean esci = false;
+        while (!esci) {
+            System.out.println("\n--- Accesso Guest ---");
+            System.out.println("1. Cerca una proiezione (per titolo)");
+            System.out.println("0. Torna al Menu Principale");
+            System.out.print("Scegli un'opzione: ");
+            
+            String scelta = scanner.nextLine();
+            switch (scelta) {
+                case "1":
+                    eseguiRicercaGuest();
+                    break;
+                case "0":
+                    esci = true;
+                    break;
+                default:
+                    System.out.println("Opzione non valida.");
+            }
+        }
+    }
+
+    private static void eseguiRicercaGuest() {
         System.out.print("Inserisci il titolo del film da cercare: ");
         String titolo = scanner.nextLine();
 
@@ -316,11 +337,11 @@ public class CineMax {
             System.out.println("\n--- Area Bigliettaio ---");
             System.out.println("1. Visualizza prenotazioni di oggi");
             System.out.println("2. Cerca una prenotazione");
-            System.out.println("0. Logout");
+            System.out.println("0. Logout e torna al menu principale");
             System.out.print("Scegli un'opzione: ");
             
             String scelta = scanner.nextLine();
-            switch (scelta) {
+            switch (scelta) {   
                 case "1":
                     visualizzaPrenotazioniOggi();
                     break;
@@ -413,7 +434,7 @@ public class CineMax {
             System.out.println("1. Aggiungi una proiezione");
             System.out.println("2. Modifica la data di una proiezione");
             System.out.println("3. Elimina una proiezione");
-            System.out.println("0. Logout");
+            System.out.println("0. Logout e torna al menu principale");
             System.out.print("Scegli un'opzione: ");
             
             String scelta = scanner.nextLine();
