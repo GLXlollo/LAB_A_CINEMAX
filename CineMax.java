@@ -9,6 +9,10 @@ public class CineMax {
     private static Utente utenteLoggato = null;
 
     public static void main(String[] args) {
+
+        // Sincronizza i database all'avvio per ricalcolare i posti corretti
+        sincronizzaPostiOccupati();
+        
         boolean esci = false;
         System.out.println("=== Benvenuto in CineMax ===");
 
@@ -561,5 +565,16 @@ public class CineMax {
             }
         }
         return false;
+    }
+
+    // All'avvio del programma, ricalcola i posti occupati leggendoli dallo storico prenotazioni
+    private static void sincronizzaPostiOccupati() {
+        for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
+            for (Proiezione proj : gestoreProiezioni.getListaProiezioni()) {
+                if (proj.getTitolo().equals(p.getTitoloFilm()) && proj.getDataOra().equals(p.getDataOraProiezione())) {
+                    proj.prenotaPosti(p.getNumeroBiglietti());
+                }
+            }
+        }
     }
 }
