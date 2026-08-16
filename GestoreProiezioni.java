@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,10 @@ public class GestoreProiezioni {
     public GestoreProiezioni() {
         listaProiezioni = new ArrayList<>();
         caricaProiezioniDaCSV();
+    }
+
+    public GestoreProiezioni(List<Proiezione> inpuArrayList) {
+        listaProiezioni = inpuArrayList;
     }
 
     private void caricaProiezioniDaCSV() {
@@ -89,7 +94,7 @@ public class GestoreProiezioni {
 
     // Ricerca parziale per titolo (Funzionalità Guest)
     public List<Proiezione> cercaPerTitolo(String titoloCercato) {
-        List<Proiezione> risultati = new ArrayList<>();
+        List<Proiezione> risultati = new ArrayList<Proiezione>();
         String titoloLower = titoloCercato.toLowerCase();
 
         for (Proiezione p : listaProiezioni) {
@@ -107,7 +112,7 @@ public class GestoreProiezioni {
     public List<Proiezione> cercaPerGenere(String genereCercato) {
         List<Proiezione> risultati = new ArrayList<>();
         for (Proiezione p : listaProiezioni) {
-            if(p.getTitolo().toLowerCase().contains(genereCercato.toLowerCase()))
+            if(p.getGenere().toLowerCase().contains(genereCercato.toLowerCase()))
                 risultati.add(p);
         }
         return risultati;
@@ -155,5 +160,15 @@ public class GestoreProiezioni {
         } catch (IOException e) {
             System.out.println("Errore nella riscrittura del file " + FILE_PROIEZIONI);
         }
+    }
+
+    public GestoreProiezioni futureProiz() {
+        List<Proiezione> future = new ArrayList<Proiezione>();
+        for (Proiezione p : listaProiezioni) {
+            LocalDateTime dataP = LocalDateTime.parse(p.getDataOra(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            if(dataP.isAfter(LocalDateTime.now()))
+                future.add(p);
+        }
+        return new GestoreProiezioni(future);
     }
 }

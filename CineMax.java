@@ -321,72 +321,98 @@ public class CineMax {
                     esci = true;
                     break;
                 default:
-                    System.out.println("Opzione non valida.");
+                    System.out.println("\nOpzione non valida.");
             }
         }
     }
 
     private static void eseguiRicercaGuest(String tipoRicerca) {
-        // Prepariamo una lista che conterrà SOLO le proiezioni future e corrispondenti alla ricerca
-        java.util.ArrayList<Proiezione> risultatiFuturi = new java.util.ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime adesso = LocalDateTime.now();
-
+        GestoreProiezioni future = gestoreProiezioni.futureProiz();
         String filtro = "";
         if (tipoRicerca.equals("TITOLO")) {
-            System.out.print("Inserisci il titolo del film: ");
+            System.out.print("\nInserisci il titolo del film: ");
             filtro = scanner.nextLine().toLowerCase();
-        } else if (tipoRicerca.equals("GENERE")) {
-            System.out.print("Inserisci il genere (es. Azione, Animazione, Thriller): ");
+            List<Proiezione> titolo = future.cercaPerTitolo(filtro);
+            boolean esci = false;
+            while(!esci) {
+                
+                int count = 0;
+                try {
+                    if(titolo.isEmpty()) {  
+                        System.out.println("Nessuna proiezione futura trovata per questa ricerca.");
+                        System.out.println("Desideri riprovare?");
+                        System.out.println("1: Sì");
+                        System.out.println("2: No (Torna al menù guest)");
+
+                        String esito = scanner.nextLine();
+                        switch(esito) {
+                            case "1": eseguiRicercaGuest(tipoRicerca);
+                            case "2": return;
+                            default: System.out.println("Opzione non valida."); break;
+                        }
+                    }
+                    for (Proiezione proiezione : titolo) {
+                    System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
+                    count++;
+                    }
+                    System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
+                    int scelta = Integer.parseInt(scanner.nextLine());
+                    if (scelta > 0 && scelta <= titolo.size()) {
+                        visualizzaProiezione(titolo.get(scelta - 1));
+                        esci=true;
+                    } else if (scelta != 0) {
+                        System.out.println("\nScelta non valida.\n");
+                    }else if (scelta == 0) {
+                    break;
+                    }
+                } catch (NumberFormatException e) {
+                System.out.println("\nInput non valido. Inserisci un numero.\n");
+                }
+            }
+        }  else if (tipoRicerca.equals("GENERE")) {
+            System.out.print("Inserisci il genere (scegli tra Action, Animation, Thriller, Drama, Biography, Comedy, Crime, Film-Noir, Horror): ");
             filtro = scanner.nextLine().toLowerCase();
+            List<Proiezione> titolo = future.cercaPerGenere(filtro);
+            boolean esci = false;
+            while(!esci) {
+                int count = 0;
+                try {
+                    if(titolo.isEmpty()) {  
+                        System.out.println("Nessuna proiezione futura trovata per questa ricerca.");
+                        System.out.println("Desideri riprovare?");
+                        System.out.println("1: Sì");
+                        System.out.println("2: No (Torna al menù guest)");
+
+                        String esito = scanner.nextLine();
+                        switch(esito) {
+                            case "1": eseguiRicercaGuest(tipoRicerca);
+                            case "2": return;
+                            default: System.out.println("Opzione non valida."); break;
+                        }
+                    }
+                    for (Proiezione proiezione : titolo) {
+                    System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
+                    count++;
+                    }
+                    System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
+                    int scelta = Integer.parseInt(scanner.nextLine());
+                    if (scelta > 0 && scelta <= titolo.size()) {
+                    visualizzaProiezione(titolo.get(scelta - 1));
+                    esci=true;
+                    } else if (scelta != 0) {
+                    System.out.println("\nScelta non valida.\n");
+                    } else if (scelta == 0) {
+                    break;
+                    }
+                } catch (NumberFormatException e) {
+                System.out.println("\nInput non valido. Inserisci un numero.\n");
+                }
+            }
         } else if (tipoRicerca.equals("DATA")) {
             filtro = leggiData("Inserisci la data da cercare");
         }
-
-        // Analizziamo tutto il palinsesto
-        for (Proiezione p : gestoreProiezioni.getListaProiezioni()) {
-            try {
-                LocalDateTime dataOraProj = LocalDateTime.parse(p.getDataOra(), formatter);
-                
-                // 1. PRIMO FILTRO: Il film non deve essere nel passato!
-                if (!dataOraProj.isBefore(adesso)) {
-                    
-                    // 2. SECONDO FILTRO: Deve corrispondere alla ricerca dell'utente
-                    boolean match = false;
-                    if (tipoRicerca.equals("TITOLO") && p.getTitolo().toLowerCase().contains(filtro)) match = true;
-                    if (tipoRicerca.equals("GENERE") && p.getGenere().toLowerCase().contains(filtro)) match = true;
-                    if (tipoRicerca.equals("DATA") && p.getDataOra().contains(filtro)) match = true;
-
-                    if (match) {
-                        risultatiFuturi.add(p);
-                    }
-                }
-            } catch (DateTimeParseException e) {
-                // Ignora eventuali righe del CSV scritte male
-            }
-        }
-
-        if (risultatiFuturi.isEmpty()) {
-            System.out.println("Nessuna proiezione futura trovata per questa ricerca.");
-            return;
-        }
-
-        System.out.println("\nProiezioni trovate (solo future/odierne):");
-        for (int i = 0; i < risultatiFuturi.size(); i++) {
-            System.out.println((i + 1) + ". " + risultatiFuturi.get(i).getTitolo() + " - " + risultatiFuturi.get(i).getDataOra());
-        }
-
-        System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
-        try {
-            int scelta = Integer.parseInt(scanner.nextLine());
-            if (scelta > 0 && scelta <= risultatiFuturi.size()) {
-                visualizzaProiezione(risultatiFuturi.get(scelta - 1));
-            } else if (scelta != 0) {
-                System.out.println("Scelta non valida.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Input non valido. Inserisci un numero.");
-        }
+        
+        
     }
 
     private static void visualizzaProiezione(Proiezione p) {
