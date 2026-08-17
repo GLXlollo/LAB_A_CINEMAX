@@ -61,16 +61,16 @@ public class CineMax {
         if (utenteLoggato != null) {
             System.out.println("\nLogin effettuato! Benvenuto " + utenteLoggato.getNome());
             
-            // Smistamento degli utenti (Specifiche pag. 7-8)
+            // Smistamento degli utenti
             switch (utenteLoggato.getRuolo()) {
                 case CLIENTE:
                     menuCliente();
                     break;
                 case PROIEZIONISTA:
-                    menuProiezionista(); // <-- MODIFICA QUI per attivare il menu
+                    menuProiezionista();
                     break;
                 case BIGLIETTAIO:
-                    menuBigliettaio(); // <-- MODIFICA QUI per attivare il menu
+                    menuBigliettaio(); 
                     break;
             }
             utenteLoggato = null; // Logout
@@ -286,29 +286,45 @@ public class CineMax {
     private static void eseguiRegistrazione() {
         System.out.println("\n--- Registrazione Nuovo Utente ---");
         
-        // Menu per la scelta del ruolo
         Ruolo ruoloScelto = null;
         while (ruoloScelto == null) {
             System.out.println("Scegli il tipo di account che vuoi creare:");
             System.out.println("1. Cliente");
-            System.out.println("2. Proiezionista");
-            System.out.println("3. Bigliettaio");
+            System.out.println("2. Proiezionista (Richiede PIN Aziendale)");
+            System.out.println("3. Bigliettaio (Richiede PIN Aziendale)");
             System.out.println("0. Annulla e torna al menu principale");
             System.out.print("Scelta: ");
             
             String sceltaRuolo = scanner.nextLine();
             switch (sceltaRuolo) {
-                case "1": ruoloScelto = Ruolo.CLIENTE; break;
-                case "2": ruoloScelto = Ruolo.PROIEZIONISTA; break;
-                case "3": ruoloScelto = Ruolo.BIGLIETTAIO; break;
+                case "1": 
+                    ruoloScelto = Ruolo.CLIENTE; 
+                    break;
+                case "2": 
+                    System.out.print("Inserisci il PIN di sicurezza aziendale: ");
+                    if (scanner.nextLine().equals("PROJ2026")) {
+                        ruoloScelto = Ruolo.PROIEZIONISTA;
+                    } else {
+                        System.out.println("PIN Errato. Registrazione dipendente annullata.\n");
+                    }
+                    break;
+                case "3": 
+                    System.out.print("Inserisci il PIN di sicurezza aziendale: ");
+                    if (scanner.nextLine().equals("TICK2026")) {
+                        ruoloScelto = Ruolo.BIGLIETTAIO;
+                    } else {
+                        System.out.println("PIN Errato. Registrazione dipendente annullata.\n");
+                    }
+                    break;
                 case "0": 
                     System.out.println("Registrazione annullata.");
-                    return; // Esce e torna al menu principale
+                    return; // Esce e torna al menu
                 default: 
                     System.out.println("Opzione non valida. Riprova.\n");
             }
         }
 
+        // Se il programma arriva qui, l'utente ha il permesso di registrarsi
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
         System.out.print("Cognome: ");
@@ -322,7 +338,7 @@ public class CineMax {
         System.out.print("Luogo del domicilio: ");
         String domicilio = scanner.nextLine();
 
-        // Chiamiamo il metodo aggiornato passando anche il ruolo scelto dall'utente
+        // Registra l'utente con il ruolo autorizzato (Cliente, oppure Staff se aveva il PIN)
         gestoreUtenti.registraUtente(nome, cognome, username, password, dataNascita, domicilio, ruoloScelto);
     }
 
