@@ -119,12 +119,34 @@ public class GestoreProiezioni {
     }
     
     // Ricerca tra 2 date (Funzionalità Guest)
-    public List<Proiezione> cercaPerData(LocalDate DataInizio, LocalDate DataFine) {
+    public List<Proiezione> cercaTraDate(LocalDate DataInizio, LocalDate DataFine) {
+        List<Proiezione> risultati = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Proiezione p : listaProiezioni) {
+            LocalDate l = LocalDate.parse(p.getDataOra().substring(0, 10), formatter);
+            if(l.isAfter(DataInizio) && l.isBefore(DataFine)) 
+                risultati.add(p);
+        }
+        return risultati;
+    }
+
+    public List<Proiezione> cercaDopoInizio(LocalDate DataInizio) {
         List<Proiezione> risultati = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (Proiezione p : listaProiezioni) {
             LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(1, 11), formatter);
-            if(l.isAfter(DataInizio) && l.isBefore(DataFine)) 
+            if(l.isAfter(DataInizio)) 
+                risultati.add(p);
+        }
+        return risultati;
+    }
+
+    public List<Proiezione> cercaPrimaFine( LocalDate DataFine) {
+        List<Proiezione> risultati = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Proiezione p : listaProiezioni) {
+            LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(1, 11), formatter);
+            if( l.isBefore(DataFine)) 
                 risultati.add(p);
         }
         return risultati;

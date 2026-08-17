@@ -223,7 +223,7 @@ public class CineMax {
         }
 
         System.out.println("Stai modificando il film: " + p.getTitoloFilm());
-        String filtroData = leggiData("Inserisci la NUOVA data che desideri cercare");
+        String filtroData = leggiData("Inserisci la NUOVA data che desideri cercare").toString();
 
         // Cerchiamo le proiezioni dello STESSO film, ma filtrate per la nuova data
         List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(p.getTitoloFilm());
@@ -409,10 +409,64 @@ public class CineMax {
                 }
             }
         } else if (tipoRicerca.equals("DATA")) {
-            filtro = leggiData("Inserisci la data da cercare");
-        }
-        
-        
+            
+            System.out.println("Cerca film TRA due date");
+            System.out.println("Desideri usare la data odierna come prima data?");
+            System.out.println("1) Sì");
+            System.out.println("2) No");
+            boolean esci = false;
+            LocalDate dataInizio = LocalDate.now();
+            while(!esci) {
+                String esito = scanner.nextLine();
+                
+                switch(esito) {
+                    case "1": esci=true;
+                    case "2": {
+                         dataInizio = leggiData("Inserisci la data");
+                        esci=true;  
+                    }
+                    default: System.out.println("Opzione non valida.");
+                }
+            }
+            System.out.println("Inserisci la seconda data: ");
+            LocalDate dataFine=leggiData("Inserisci la data");
+            List<Proiezione> titolo = gestoreProiezioni.cercaTraDate(dataInizio, dataFine);
+            esci = false;
+            while(!esci) {
+                int count = 0;
+                try {
+                    if(titolo.isEmpty()) {  
+                        System.out.println("Nessuna proiezione trovata per questa ricerca.");
+                        System.out.println("Desideri riprovare?");
+                        System.out.println("1: Sì");
+                        System.out.println("2: No (Torna al menù guest)");
+
+                        String esito = scanner.nextLine();
+                        switch(esito) {
+                            case "1": eseguiRicercaGuest(tipoRicerca);
+                            case "2": return;
+                            default: System.out.println("Opzione non valida."); break;
+                        }
+                    }
+                    for (Proiezione proiezione : titolo) {
+                    System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
+                    count++;
+                    }
+                    System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
+                    int scelta = Integer.parseInt(scanner.nextLine());
+                    if (scelta > 0 && scelta <= titolo.size()) {
+                    visualizzaProiezione(titolo.get(scelta - 1));
+                    esci=true;
+                    } else if (scelta != 0) {
+                    System.out.println("\nScelta non valida.\n");
+                    } else if (scelta == 0) {
+                    break;
+                    }
+                } catch (NumberFormatException e) {
+                System.out.println("\nInput non valido. Inserisci un numero.\n");
+                }
+            }
+        }  
     }
 
     private static void visualizzaProiezione(Proiezione p) {
@@ -671,15 +725,15 @@ public class CineMax {
 
     // --- METODI DI SUPPORTO PER VALIDAZIONE DATE ---
     
-    private static String leggiData(String messaggio) {
+    private static LocalDate leggiData(String messaggio) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         while (true) {
             System.out.print(messaggio + " (Formato richiesto: AAAA-MM-GG, es. 2026-05-15): ");
-            String input = scanner.nextLine();
+            String input = scanner.next("yyyy-MM-dd");
             try {
                 // Tenta di convertire la stringa in una data reale. Se fallisce, va nel catch.
                 LocalDate data = LocalDate.parse(input, formatter);
-                return data.toString(); // Restituisce la stringa sicura e formattata
+                return data; // Restituisce la stringa sicura e formattata
             } catch (DateTimeParseException e) {
                 System.out.println("Errore: Formato data non valido. Controlla la struttura con i trattini oppure se la data è errata o inesistente.");
             }
