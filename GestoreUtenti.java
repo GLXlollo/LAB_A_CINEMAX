@@ -59,9 +59,9 @@ public class GestoreUtenti {
                    u.getRuolo().name());
     }
 
-    // Funzionalità di registrazione cliente: scrive SUBITO nel CSV
-    public void registraCliente(String nome, String cognome, String username, String password, 
-                                String dataNascita, String luogoDomicilio) {
+    // Funzionalità di registrazione utente: scrive SUBITO nel CSV
+    public void registraUtente(String nome, String cognome, String username, String password, 
+                                String dataNascita, String luogoDomicilio, Ruolo ruolo) {
         
         // Controllo se l'username esiste già
         for (Utente u : listaUtenti) {
@@ -71,17 +71,17 @@ public class GestoreUtenti {
             }
         }
         
-        // Creo l'oggetto
-        Utente nuovoCliente = new Utente(nome, cognome, username, cifraPassword(password), 
-                                         dataNascita, luogoDomicilio, Ruolo.CLIENTE);
+        // Creo l'oggetto usando il ruolo passato come parametro
+        Utente nuovoUtente = new Utente(nome, cognome, username, cifraPassword(password), 
+                                         dataNascita, luogoDomicilio, ruolo);
         
         // Lo aggiungo alla lista in memoria
-        listaUtenti.add(nuovoCliente);
+        listaUtenti.add(nuovoUtente);
         
         // Lo SCRIVO IMMEDIATAMENTE nel file in modalità "append" (true)
         try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_UTENTI, true))) {
-            scriviRigaUtente(pw, nuovoCliente);
-            System.out.println("Registrazione completata e salvata nel file Utenti.csv!");
+            scriviRigaUtente(pw, nuovoUtente);
+            System.out.println("Registrazione completata con successo! Account creato come: " + ruolo.name());
         } catch (IOException e) {
             System.out.println("Errore durante la scrittura sul file Utenti.csv");
         }

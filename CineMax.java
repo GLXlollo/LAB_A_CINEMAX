@@ -22,7 +22,7 @@ public class CineMax {
 
         while (!esci) {
             System.out.println("\n1. Login");
-            System.out.println("2. Registrati come nuovo cliente");
+            System.out.println("2. Registrati come nuovo utente (cliente, bigliettaio o proiezionista)");
             System.out.println("3. Entra come utente Guest");
             System.out.println("0. Esci");
             System.out.print("Scegli un'opzione: ");
@@ -283,9 +283,32 @@ public class CineMax {
         }
     }
 
-    // --- MENU GUEST ---
     private static void eseguiRegistrazione() {
-        System.out.println("\n--- Registrazione Cliente ---");
+        System.out.println("\n--- Registrazione Nuovo Utente ---");
+        
+        // Menu per la scelta del ruolo
+        Ruolo ruoloScelto = null;
+        while (ruoloScelto == null) {
+            System.out.println("Scegli il tipo di account che vuoi creare:");
+            System.out.println("1. Cliente");
+            System.out.println("2. Proiezionista");
+            System.out.println("3. Bigliettaio");
+            System.out.println("0. Annulla e torna al menu principale");
+            System.out.print("Scelta: ");
+            
+            String sceltaRuolo = scanner.nextLine();
+            switch (sceltaRuolo) {
+                case "1": ruoloScelto = Ruolo.CLIENTE; break;
+                case "2": ruoloScelto = Ruolo.PROIEZIONISTA; break;
+                case "3": ruoloScelto = Ruolo.BIGLIETTAIO; break;
+                case "0": 
+                    System.out.println("Registrazione annullata.");
+                    return; // Esce e torna al menu principale
+                default: 
+                    System.out.println("Opzione non valida. Riprova.\n");
+            }
+        }
+
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
         System.out.print("Cognome: ");
@@ -299,9 +322,11 @@ public class CineMax {
         System.out.print("Luogo del domicilio: ");
         String domicilio = scanner.nextLine();
 
-        gestoreUtenti.registraCliente(nome, cognome, username, password, dataNascita, domicilio);
+        // Chiamiamo il metodo aggiornato passando anche il ruolo scelto dall'utente
+        gestoreUtenti.registraUtente(nome, cognome, username, password, dataNascita, domicilio, ruoloScelto);
     }
 
+    // --- MENU GUEST ---
     private static void menuGuest() {
         boolean esci = false;
         while (!esci) {
