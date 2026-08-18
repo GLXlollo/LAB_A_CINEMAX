@@ -134,7 +134,7 @@ public class GestoreProiezioni {
         List<Proiezione> risultati = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (Proiezione p : listaProiezioni) {
-            LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(1, 11), formatter);
+            LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(0, 10), formatter);
             if(l.isAfter(DataInizio)) 
                 risultati.add(p);
         }
@@ -145,7 +145,7 @@ public class GestoreProiezioni {
         List<Proiezione> risultati = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (Proiezione p : listaProiezioni) {
-            LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(1, 11), formatter);
+            LocalDate l = LocalDate.parse(p.getDataOra().toString().substring(0, 10), formatter);
             if( l.isBefore(DataFine)) 
                 risultati.add(p);
         }

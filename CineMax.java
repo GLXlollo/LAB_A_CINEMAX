@@ -107,54 +107,51 @@ public class CineMax {
     }
 
     private static void eseguiPrenotazioneCliente() {
-        System.out.print("Inserisci il titolo del film da cercare: ");
-        String titolo = scanner.nextLine();
-
-        // 1. Peschiamo tutti i risultati
-        List<Proiezione> risultatiGrezzi = gestoreProiezioni.cercaPerTitolo(titolo);
-        
-        // 2. Filtriamo SOLO quelli nel futuro/presente
-        java.util.ArrayList<Proiezione> risultatiFuturi = new java.util.ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime adesso = LocalDateTime.now();
-
-        for (Proiezione p : risultatiGrezzi) {
+        GestoreProiezioni future = gestoreProiezioni.futureProiz();
+        String filtro = "";
+        System.out.print("\nInserisci il titolo del film: ");
+        filtro = scanner.nextLine().toLowerCase();
+        List<Proiezione> titolo = future.cercaPerTitolo(filtro);
+        boolean esci = false;
+        while(!esci) {
+            int count = 0;
             try {
-                LocalDateTime dataOraProj = LocalDateTime.parse(p.getDataOra(), formatter);
-                if (!dataOraProj.isBefore(adesso)) { // Se NON è prima di adesso
-                    risultatiFuturi.add(p);
+                if(titolo.isEmpty()) {  
+                    System.out.println("Nessuna proiezione futura trovata per questa ricerca.");
+                    System.out.println("Desideri riprovare?");
+                    System.out.println("1: Sì");
+                    System.out.println("2: No (Torna al menù guest)");
+
+                    String esito = scanner.nextLine();
+                    switch(esito) {
+                        case "1": eseguiPrenotazioneCliente(); break;
+                        case "2": return;
+                        default: System.out.println("Opzione non valida."); break;
+                    }
                 }
-            } catch (DateTimeParseException e) {
-                // Ignora eventuali righe del CSV malformate
-            }
-        }
-
-        if (risultatiFuturi.isEmpty()) {
-            System.out.println("Nessuna proiezione futura trovata per questo titolo.");
-            return;
-        }
-
-        System.out.println("\nProiezioni trovate (solo future/odierne):");
-        for (int i = 0; i < risultatiFuturi.size(); i++) {
-            System.out.println((i + 1) + ". " + risultatiFuturi.get(i).getTitolo() + " - " + risultatiFuturi.get(i).getDataOra() + " (Posti liberi: " + risultatiFuturi.get(i).getPostiLiberi() + ")");
-        }
-
-        System.out.print("\nScegli la proiezione per vedere i dettagli e prenotare (o 0 per annullare): ");
-        try {
-            int scelta = Integer.parseInt(scanner.nextLine());
-            if (scelta > 0 && scelta <= risultatiFuturi.size()) {
-                Proiezione p = risultatiFuturi.get(scelta - 1);
-                visualizzaProiezione(p); 
-                
-                // Usiamo il nostro validatore per impedire numeri negativi!
-                int numBiglietti = leggiInteroPositivo("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ", true);
-                
-                if (numBiglietti > 0) {
-                    gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
+                    
+                for (Proiezione proiezione : titolo) {
+                    System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
+                    count++;
                 }
+                System.out.print("\nScegli la proiezione per vedere i dettagli e prenotare (o 0 per annullare): ");
+                int scelta = Integer.parseInt(scanner.nextLine());
+                if (scelta > 0 && scelta <= future.getListaProiezioni().size()) {
+                    Proiezione p = future.getListaProiezioni().get(scelta - 1);
+                    visualizzaProiezione(p); 
+                
+                    // Usiamo il nostro validatore per impedire numeri negativi!
+                    int numBiglietti = leggiInteroPositivo("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ", true);
+                
+                    if (numBiglietti > 0) {
+                        gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
+                        
+                    }
+                    esci=true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Input non valido. Inserisci un numero.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Input non valido. Inserisci un numero.");
         }
     }
 
@@ -387,7 +384,7 @@ public class CineMax {
 
                         String esito = scanner.nextLine();
                         switch(esito) {
-                            case "1": eseguiRicercaGuest(tipoRicerca);
+                            case "1": eseguiRicercaGuest(tipoRicerca); break;
                             case "2": return;
                             default: System.out.println("Opzione non valida."); break;
                         }
@@ -461,10 +458,11 @@ public class CineMax {
                 String esito = scanner.nextLine();
                 
                 switch(esito) {
-                    case "1": esci=true;
+                    case "1": esci=true; break;
                     case "2": {
                          dataInizio = leggiData("Inserisci la data");
-                        esci=true;  
+                        esci=true; 
+                        break;
                     }
                     default: System.out.println("Opzione non valida.");
                 }
@@ -482,9 +480,9 @@ public class CineMax {
                         System.out.println("1: Sì");
                         System.out.println("2: No (Torna al menù guest)");
 
-                        String esito = scanner.nextLine();
+                        String esito = scanner.next();
                         switch(esito) {
-                            case "1": eseguiRicercaGuest(tipoRicerca);
+                            case "1": eseguiRicercaGuest(tipoRicerca); break;
                             case "2": return;
                             default: System.out.println("Opzione non valida."); break;
                         }
@@ -494,7 +492,7 @@ public class CineMax {
                     count++;
                     }
                     System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
-                    int scelta = Integer.parseInt(scanner.nextLine());
+                    int scelta = Integer.parseInt(scanner.next());
                     if (scelta > 0 && scelta <= titolo.size()) {
                     visualizzaProiezione(titolo.get(scelta - 1));
                     esci=true;
@@ -766,11 +764,11 @@ public class CineMax {
 
     // --- METODI DI SUPPORTO PER VALIDAZIONE DATE ---
     
-    private static LocalDate leggiData(String messaggio) {
+    protected static LocalDate leggiData(String messaggio) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         while (true) {
             System.out.print(messaggio + " (Formato richiesto: AAAA-MM-GG, es. 2026-05-15): ");
-            String input = scanner.next("yyyy-MM-dd");
+            String input = scanner.next();
             try {
                 // Tenta di convertire la stringa in una data reale. Se fallisce, va nel catch.
                 LocalDate data = LocalDate.parse(input, formatter);
@@ -785,7 +783,7 @@ public class CineMax {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         while (true) {
             System.out.print(messaggio + " (Formato: AAAA-MM-GG HH:MM, es. 2026-05-15 21:30): ");
-            String input = scanner.nextLine();
+            String input = scanner.next();
             try {
                 // Tenta di convertire la stringa in data+ora.
                 LocalDateTime dataOra = LocalDateTime.parse(input, formatter);
