@@ -136,8 +136,8 @@ public class CineMax {
                 }
                 System.out.print("\nScegli la proiezione per vedere i dettagli e prenotare (o 0 per annullare): ");
                 int scelta = Integer.parseInt(scanner.nextLine());
-                if (scelta > 0 && scelta <= future.getListaProiezioni().size()) {
-                    Proiezione p = future.getListaProiezioni().get(scelta - 1);
+                if (scelta > 0 && scelta <= titolo.size()) {
+                    Proiezione p = titolo.get(scelta - 1);
                     visualizzaProiezione(p); 
                 
                     // Usiamo il nostro validatore per impedire numeri negativi!
@@ -181,7 +181,7 @@ public class CineMax {
         }
 
         // Controllo: la proiezione non deve essere nel passato
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dataProiezione = LocalDateTime.parse(p.getDataOraProiezione(), formatter);
         if (dataProiezione.isBefore(LocalDateTime.now())) {
             System.out.println("Errore: Non puoi cancellare una prenotazione per un film già passato o iniziato.");
@@ -212,25 +212,24 @@ public class CineMax {
         }
 
         // Controllo: la proiezione originale non deve essere nel passato
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dataProiezione = LocalDateTime.parse(p.getDataOraProiezione(), formatter);
         if (dataProiezione.isBefore(LocalDateTime.now())) {
             System.out.println("Errore: Non puoi modificare una prenotazione per un film già passato o iniziato.");
             return;
         }
 
-        System.out.println("Stai modificando il film: " + p.getTitoloFilm());
-        String filtroData = leggiData("Inserisci la NUOVA data che desideri cercare").toString();
+        System.out.println("Stai modificando il film: " + p.getTitoloFilm() + " Prenotato per il giorno: " + p.getDataOraProiezione());
+        
 
         // Cerchiamo le proiezioni dello STESSO film, ma filtrate per la nuova data
-        List<Proiezione> risultati = gestoreProiezioni.cercaPerTitolo(p.getTitoloFilm());
+        GestoreProiezioni future = gestoreProiezioni.futureProiz();
+        List<Proiezione> risultati = future.cercaPerTitolo(p.getTitoloFilm());
         System.out.println("\nNuove proiezioni disponibili per " + p.getTitoloFilm() + ":");
         int count = 1;
-        for (Proiezione proj : risultati) {
-            if (proj.getDataOra().contains(filtroData)) {
-                System.out.println(count + ". " + proj.getDataOra() + " (Posti liberi: " + proj.getPostiLiberi() + ")");
-                count++;
-            }
+        for (Proiezione proj : risultati) {   
+            System.out.println(count + ". " + proj.getDataOra() + " (Posti liberi: " + proj.getPostiLiberi() + ")");
+            count++;    
         }
 
         if (count == 1) {
@@ -246,13 +245,13 @@ public class CineMax {
                 Proiezione nuovaProj = null;
                 int indiceTemporaneo = 1;
                 for (Proiezione proj : risultati) {
-                    if (proj.getDataOra().contains(filtroData)) {
-                        if (indiceTemporaneo == scelta) {
-                            nuovaProj = proj;
-                            break;
-                        }
-                        indiceTemporaneo++;
+                    
+                    if (indiceTemporaneo == scelta) {
+                        nuovaProj = proj;
+                        break;
                     }
+                    indiceTemporaneo++;
+                    
                 }
                 
                 if (nuovaProj != null && nuovaProj.getPostiLiberi() >= p.getNumeroBiglietti()) {
@@ -330,7 +329,7 @@ public class CineMax {
         String username = scanner.nextLine();
         System.out.print("Password: ");
         String password = scanner.nextLine();
-        System.out.print("Data di nascita (facoltativa, premi invio per saltare): ");
+        System.out.print("Data di nascita (Formato: AAAA-MM-DD facoltativa, premi invio per saltare): ");
         String dataNascita = scanner.nextLine();
         System.out.print("Luogo del domicilio: ");
         String domicilio = scanner.nextLine();
@@ -516,7 +515,7 @@ public class CineMax {
         System.out.println("Anno: " + p.getAnno());
         System.out.println("Durata: " + p.getDurata() + " min");
         System.out.println("Data e Ora: " + p.getDataOra());
-        System.out.println("Costo biglietto: €" + p.getCostoBiglietto());
+        System.out.println("Costo biglietto: Euro " + p.getCostoBiglietto());
         System.out.println("Posti liberi: " + p.getPostiLiberi());
         System.out.println("---------------------------");
     }
@@ -570,17 +569,33 @@ public class CineMax {
     }
 
     private static void cercaPrenotazioneBigliettaio() {
-        // Pagina 11: Ricerca per codice, nome, o titolo
+
+        
         System.out.println("\n--- Cerca Prenotazione ---");
         System.out.println("1. Per Codice Prenotazione");
         System.out.println("2. Per Titolo film");
         System.out.println("3. Per Nome o Cognome cliente");
+        System.out.println("0. Torna al menù");
         System.out.print("Scegli il criterio: ");
+
         String criterio = scanner.nextLine();
-        
-        System.out.print("Inserisci il testo da cercare: ");
+        switch (criterio) {   
+            case "1":
+                System.out.println("Inserisci Codice: "); 
+                break;
+            case "2":
+                System.out.println("Inserisci Titolo: ");
+                break;
+            case "3":
+                System.out.println("Inserisci nome o cognome cliente: ");
+                break;
+            case "0":
+                return;
+            default:
+                System.out.println("Opzione non valida.");
+                cercaPrenotazioneBigliettaio();
+        } 
         String testo = scanner.nextLine().toLowerCase();
-        
         boolean trovate = false;
         for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
             boolean match = false;
@@ -614,8 +629,8 @@ public class CineMax {
         System.out.println("\n[Codice: " + p.getCodiceUnivoco() + "]");
         System.out.println("Cliente: " + nomeCompleto);
         System.out.println("Film: " + p.getTitoloFilm() + " | Orario: " + p.getDataOraProiezione());
-        System.out.println("Biglietti: " + p.getNumeroBiglietti() + " | Costo unitario: €" + p.getCostoUnitario());
-        System.out.println("Costo Totale: €" + p.getCostoTotale());
+        System.out.println("Biglietti: " + p.getNumeroBiglietti() + " | Costo unitario: Euro " + p.getCostoUnitario());
+        System.out.println("Costo Totale: Euro " + p.getCostoTotale());
         System.out.println("-------------------------------------------------");
     }
 
@@ -646,11 +661,12 @@ public class CineMax {
 
     private static void eseguiAggiungiProiezione() {
         System.out.println("\n--- Aggiungi Proiezione ---");
-        String dataOra = leggiDataOra("Data e Ora della nuova proiezione");
-        
+        LocalDateTime dataOra = leggiDataOra("Data e Ora della nuova proiezione");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // Controllo sovrapposizione
         for (Proiezione p : gestoreProiezioni.getListaProiezioni()) {
-            if (p.getDataOra().equals(dataOra)) {
+            LocalDateTime dataProiez = LocalDateTime.parse(p.getDataOra(), formatter);
+            if (dataProiez.equals(dataOra)) {
                 System.out.println("Errore: Esiste già una proiezione in questa data e ora!");
                 return;
             }
@@ -666,7 +682,9 @@ public class CineMax {
         int eta = leggiInteroPositivo("Età minima (es. 14, usa 0 per tutti): ", true);
         double costo = leggiDoublePositivo("Costo biglietto (es. 8.50): ");
 
-        Proiezione nuova = new Proiezione(dataOra, titolo, genere, regista, anno, durata, eta, costo);
+
+        
+        Proiezione nuova = new Proiezione(dataOra.format(formatter), titolo, genere, regista, anno, durata, eta, costo);
         gestoreProiezioni.aggiungiProiezione(nuova);
         System.out.println("Proiezione aggiunta con successo e salvata nel palinsesto!");
     }
@@ -697,8 +715,9 @@ public class CineMax {
                     return;
                 }
                 
-                String nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
-                p.setDataOra(nuovaData);
+                LocalDateTime nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                p.setDataOra(nuovaData.format(formatter));
                 gestoreProiezioni.riscriviFileCSV();
                 System.out.println("Data della proiezione modificata con successo!");
             }
@@ -779,18 +798,19 @@ public class CineMax {
         }
     }
 
-    private static String leggiDataOra(String messaggio) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static LocalDateTime leggiDataOra(String messaggio) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         while (true) {
             System.out.print(messaggio + " (Formato: AAAA-MM-GG HH:MM, es. 2026-05-15 21:30): ");
-            String input = scanner.next();
+            String input = scanner.nextLine();
             try {
                 // Tenta di convertire la stringa in data+ora.
+                input = input.concat(":00");
                 LocalDateTime dataOra = LocalDateTime.parse(input, formatter);
-                return dataOra.format(formatter); // Restituisce la stringa perfetta
+                return dataOra; // Restituisce la stringa perfetta
             } catch (DateTimeParseException e) {
                 System.out.println("Errore: Formato non valido. Controlla la struttura con i trattini oppure se la data e l'ora sono errate.");
-            }
+            } 
         }
     }
 

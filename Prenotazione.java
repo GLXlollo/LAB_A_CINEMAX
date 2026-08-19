@@ -40,7 +40,7 @@ public class Prenotazione implements Serializable {
     public String getCodiceUnivoco() { return codiceUnivoco; }
     public String getUsernameCliente() { return usernameCliente; }
     public String getTitoloFilm() { return titoloFilm; }
-    public String getDataOraProiezione() { return dataOraProiezione; }
+    public String getDataOraProiezione() { return dataOraProiezione.trim(); }
     public int getNumeroBiglietti() { return numeroBiglietti; }
     public double getCostoUnitario() { return costoUnitario; }
     public double getCostoTotale() { return costoTotale; }

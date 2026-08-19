@@ -30,7 +30,7 @@ public class Proiezione implements Serializable {
     }
 
     // Getters
-    public String getDataOra() { return dataOra.substring(1, 20); }
+    public String getDataOra() { return dataOra; }
     public String getTitolo() { return titolo; }
     public String getGenere() { return genere; }
     public String getRegista() { return regista; }

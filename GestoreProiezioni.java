@@ -174,14 +174,19 @@ public class GestoreProiezioni {
             // Riscrivo l'intestazione
             pw.println("DataOra,Titolo,Genere,Regista,Anno,Durata,EtaMinima,Costo"); 
             for (Proiezione p : listaProiezioni) {
-                pw.println(p.getDataOra() + DELIMITATORE + p.getTitolo() + DELIMITATORE + 
-                           p.getGenere() + DELIMITATORE + p.getRegista() + DELIMITATORE + 
-                           p.getAnno() + DELIMITATORE + p.getDurata() + DELIMITATORE + 
-                           p.getEtaMinima() + DELIMITATORE + p.getCostoBiglietto());
+                try {
+                    pw.println(p.getDataOra() + DELIMITATORE + p.getTitolo() + DELIMITATORE + 
+                    p.getGenere() + DELIMITATORE + p.getRegista() + DELIMITATORE + 
+                    p.getAnno() + DELIMITATORE + p.getDurata() + DELIMITATORE + 
+                    p.getEtaMinima() + DELIMITATORE + p.getCostoBiglietto());
+                } catch (java.lang.StringIndexOutOfBoundsException e) {
+                    System.out.println("Errore nel metodo p.getDataOra del film: " + p.getTitolo());
+                }
+                
             }
         } catch (IOException e) {
             System.out.println("Errore nella riscrittura del file " + FILE_PROIEZIONI);
-        }
+        } 
     }
 
     public GestoreProiezioni futureProiz() {
