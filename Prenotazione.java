@@ -53,6 +53,6 @@ public class Prenotazione implements Serializable {
     @Override
     public String toString() {
         return "Codice: " + codiceUnivoco + " | Film: " + titoloFilm + " (" + dataOraProiezione + 
-               ") | Biglietti: " + numeroBiglietti + " | Totale: €" + costoTotale;
+               ") | Biglietti: " + numeroBiglietti + " | Totale: Euro " + costoTotale;
     }
 }

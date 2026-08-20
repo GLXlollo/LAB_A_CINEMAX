@@ -136,7 +136,11 @@ public class CineMax {
                 }
                 System.out.print("\nScegli la proiezione per vedere i dettagli e prenotare (o 0 per annullare): ");
                 int scelta = Integer.parseInt(scanner.nextLine());
-                if (scelta > 0 && scelta <= titolo.size()) {
+                
+                if (scelta == 0) {
+                    System.out.println("Prenotazione annullata. Ritorno al menu.");
+                    return; // Esce e torna al menu cliente
+                } else if (scelta > 0 && scelta <= titolo.size()) {
                     Proiezione p = titolo.get(scelta - 1);
                     visualizzaProiezione(p); 
                 
@@ -145,9 +149,11 @@ public class CineMax {
                 
                     if (numBiglietti > 0) {
                         gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
-                        
                     }
-                    esci=true;
+                    esci = true;
+                } else {
+                    // Stampa l'errore e non cambia "esci". Il while ripartirà e stamperà di nuovo la lista!
+                    System.out.println("Errore: devi inserire uno dei numeri in elenco (da 1 a " + titolo.size() + ") oppure 0 per annullare.\n");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Input non valido. Inserisci un numero.");
@@ -237,45 +243,54 @@ public class CineMax {
             return;
         }
 
-        System.out.print("Scegli il numero della nuova proiezione (o 0 per annullare): ");
-        try {
-            int scelta = Integer.parseInt(scanner.nextLine());
-            if (scelta > 0 && scelta < count) {
-                // Troviamo la proiezione scelta dall'utente (aggiustando l'indice)
-                Proiezione nuovaProj = null;
-                int indiceTemporaneo = 1;
-                for (Proiezione proj : risultati) {
-                    
-                    if (indiceTemporaneo == scelta) {
-                        nuovaProj = proj;
-                        break;
-                    }
-                    indiceTemporaneo++;
-                    
-                }
+        // Ciclo infinito: ne usciamo solo con 'return' se l'utente digita 0 o fa la modifica con successo
+        while (true) {
+            System.out.print("\nScegli il numero della nuova proiezione (o 0 per annullare): ");
+            try {
+                int scelta = Integer.parseInt(scanner.nextLine());
                 
-                if (nuovaProj != null && nuovaProj.getPostiLiberi() >= p.getNumeroBiglietti()) {
-                    // 1. Liberiamo i vecchi posti
-                    for (Proiezione proj : gestoreProiezioni.getListaProiezioni()) {
-                        if (proj.getTitolo().equals(p.getTitoloFilm()) && proj.getDataOra().equals(p.getDataOraProiezione())) {
-                            proj.liberaPosti(p.getNumeroBiglietti());
+                if (scelta == 0) {
+                    System.out.println("Modifica annullata. Ritorno al menu principale.");
+                    return; // Interrompe il metodo e torna al menu
+                } else if (scelta > 0 && scelta < count) {
+                    // Troviamo la proiezione scelta dall'utente (aggiustando l'indice)
+                    Proiezione nuovaProj = null;
+                    int indiceTemporaneo = 1;
+                    for (Proiezione proj : risultati) {
+                        if (indiceTemporaneo == scelta) {
+                            nuovaProj = proj;
                             break;
                         }
+                        indiceTemporaneo++;
                     }
-                    // 2. Occupiamo i posti nella nuova data
-                    nuovaProj.prenotaPosti(p.getNumeroBiglietti());
                     
-                    // 3. Modifichiamo la data sulla prenotazione e salviamo il file
-                    p.setDataOraProiezione(nuovaProj.getDataOra());
-                    gestorePrenotazioni.riscriviFileCSV();
+                    if (nuovaProj != null && nuovaProj.getPostiLiberi() >= p.getNumeroBiglietti()) {
+                        // 1. Liberiamo i vecchi posti
+                        for (Proiezione proj : gestoreProiezioni.getListaProiezioni()) {
+                            if (proj.getTitolo().equals(p.getTitoloFilm()) && proj.getDataOra().equals(p.getDataOraProiezione())) {
+                                proj.liberaPosti(p.getNumeroBiglietti());
+                                break;
+                            }
+                        }
+                        // 2. Occupiamo i posti nella nuova data
+                        nuovaProj.prenotaPosti(p.getNumeroBiglietti());
+                        
+                        // 3. Modifichiamo la data sulla prenotazione e salviamo il file
+                        p.setDataOraProiezione(nuovaProj.getDataOra());
+                        gestorePrenotazioni.riscriviFileCSV();
 
-                    System.out.println("Data modificata con successo!");
+                        System.out.println("Data modificata con successo!");
+                        return; // Modifica fatta, usciamo dal metodo!
+                    } else {
+                        System.out.println("Errore: La nuova proiezione non ha abbastanza posti.");
+                        return;
+                    }
                 } else {
-                    System.out.println("Errore: La nuova proiezione non ha abbastanza posti.");
+                    System.out.println("Errore: devi inserire uno dei numeri in elenco (da 1 a " + (count - 1) + ") oppure 0 per tornare al menu.");
                 }
+            } catch (NumberFormatException e) {
+                System.out.println("Input non valido. Inserisci un numero.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Input non valido.");
         }
     }
 
@@ -569,55 +584,63 @@ public class CineMax {
     }
 
     private static void cercaPrenotazioneBigliettaio() {
+        // Usiamo il ciclo instead della ricorsione!
+        while (true) {
+            System.out.println("\n--- Cerca Prenotazione ---");
+            System.out.println("1. Per Codice Prenotazione");
+            System.out.println("2. Per Titolo film");
+            System.out.println("3. Per Nome o Cognome cliente");
+            System.out.println("0. Torna al menù");
+            System.out.print("Scegli il criterio: ");
 
-        
-        System.out.println("\n--- Cerca Prenotazione ---");
-        System.out.println("1. Per Codice Prenotazione");
-        System.out.println("2. Per Titolo film");
-        System.out.println("3. Per Nome o Cognome cliente");
-        System.out.println("0. Torna al menù");
-        System.out.print("Scegli il criterio: ");
-
-        String criterio = scanner.nextLine();
-        switch (criterio) {   
-            case "1":
-                System.out.println("Inserisci Codice: "); 
-                break;
-            case "2":
-                System.out.println("Inserisci Titolo: ");
-                break;
-            case "3":
-                System.out.println("Inserisci nome o cognome cliente: ");
-                break;
-            case "0":
-                return;
-            default:
-                System.out.println("Opzione non valida.");
-                cercaPrenotazioneBigliettaio();
-        } 
-        String testo = scanner.nextLine().toLowerCase();
-        boolean trovate = false;
-        for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
-            boolean match = false;
+            String criterio = scanner.nextLine().trim();
             
-            if (criterio.equals("1") && p.getCodiceUnivoco().toLowerCase().equals(testo)) {
-                match = true;
-            } else if (criterio.equals("2") && p.getTitoloFilm().toLowerCase().contains(testo)) {
-                match = true;
+            // Gestiamo subito l'uscita o l'errore
+            if (criterio.equals("0")) {
+                return; // Esce e torna al menu principale
+            } else if (!criterio.equals("1") && !criterio.equals("2") && !criterio.equals("3")) {
+                System.out.println("Opzione non valida. Riprova.");
+                continue; // Ricomincia il ciclo da capo
+            }
+
+            // Chiediamo l'input specifico senza fare switch inutili
+            if (criterio.equals("1")) {
+                System.out.print("Inserisci Codice: "); 
+            } else if (criterio.equals("2")) {
+                System.out.print("Inserisci Titolo: ");
             } else if (criterio.equals("3")) {
-                Utente u = gestoreUtenti.getUtenteByUsername(p.getUsernameCliente());
-                if (u != null && (u.getNome().toLowerCase().contains(testo) || u.getCognome().toLowerCase().contains(testo))) {
+                System.out.print("Inserisci nome o cognome cliente: ");
+            }
+            
+            String testo = scanner.nextLine().toLowerCase().trim();
+            boolean trovate = false;
+            
+            for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
+                boolean match = false;
+                
+                if (criterio.equals("1") && p.getCodiceUnivoco().toLowerCase().equals(testo)) {
                     match = true;
+                } else if (criterio.equals("2") && p.getTitoloFilm().toLowerCase().contains(testo)) {
+                    match = true;
+                } else if (criterio.equals("3")) {
+                    Utente u = gestoreUtenti.getUtenteByUsername(p.getUsernameCliente());
+                    if (u != null && (u.getNome().toLowerCase().contains(testo) || u.getCognome().toLowerCase().contains(testo))) {
+                        match = true;
+                    }
+                }
+                
+                if (match) {
+                    stampaDettagliPrenotazione(p);
+                    trovate = true;
                 }
             }
             
-            if (match) {
-                stampaDettagliPrenotazione(p);
-                trovate = true;
+            if (!trovate) {
+                System.out.println("Nessuna corrispondenza trovata.");
             }
-        }
-        if (!trovate) {
-            System.out.println("Nessuna corrispondenza trovata.");
+            
+            // RICERCA FINITA: usciamo dal metodo e torniamo dritti al menu Bigliettaio!
+            return; 
         }
     }
 
@@ -703,26 +726,38 @@ public class CineMax {
             System.out.println((i + 1) + ". " + risultati.get(i).getTitolo() + " - " + risultati.get(i).getDataOra());
         }
 
-        System.out.print("Scegli la proiezione da modificare (0 per annullare): ");
-        try {
-            int scelta = Integer.parseInt(scanner.nextLine());
-            if (scelta > 0 && scelta <= risultati.size()) {
-                Proiezione p = risultati.get(scelta - 1);
+        // Ciclo infinito per bloccare l'utente finché non inserisce un numero valido
+        while (true) {
+            System.out.print("\nScegli la proiezione da modificare (0 per annullare): ");
+            try {
+                int scelta = Integer.parseInt(scanner.nextLine());
                 
-                // Controllo prenotazioni esistenti (Specifiche pag. 13)
-                if (haPrenotazioni(p)) {
-                    System.out.println("Errore: Non puoi modificare una proiezione che ha già delle prenotazioni attive!");
-                    return;
+                if (scelta == 0) {
+                    System.out.println("Modifica annullata. Ritorno al menu principale.");
+                    return; // Esce dal ciclo e dal metodo
+                } else if (scelta > 0 && scelta <= risultati.size()) {
+                    Proiezione p = risultati.get(scelta - 1);
+                    
+                    // Controllo prenotazioni esistenti (Specifiche pag. 13)
+                    if (haPrenotazioni(p)) {
+                        System.out.println("Errore: Non puoi modificare una proiezione che ha già delle prenotazioni attive!");
+                        return;
+                    }
+                    
+                    LocalDateTime nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    p.setDataOra(nuovaData.format(formatter));
+                    gestoreProiezioni.riscriviFileCSV();
+                    System.out.println("Data della proiezione modificata con successo!");
+                    
+                    return; // Modifica fatta, usciamo dal ciclo
+                } else {
+                    // Messaggio di errore se mette un numero troppo alto (senza uscire dal menu)
+                    System.out.println("Errore: devi inserire uno dei numeri in elenco (da 1 a " + risultati.size() + ") oppure 0 per tornare al menu.");
                 }
-                
-                LocalDateTime nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                p.setDataOra(nuovaData.format(formatter));
-                gestoreProiezioni.riscriviFileCSV();
-                System.out.println("Data della proiezione modificata con successo!");
+            } catch (NumberFormatException e) {
+                System.out.println("Input non valido. Inserisci un numero.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Input non valido.");
         }
     }
 
@@ -740,23 +775,36 @@ public class CineMax {
             System.out.println((i + 1) + ". " + risultati.get(i).getTitolo() + " - " + risultati.get(i).getDataOra());
         }
 
-        System.out.print("Scegli la proiezione da eliminare in modo definitivo (0 per annullare): ");
-        try {
-            int scelta = Integer.parseInt(scanner.nextLine());
-            if (scelta > 0 && scelta <= risultati.size()) {
-                Proiezione p = risultati.get(scelta - 1);
+        // Ciclo infinito per bloccare l'utente finché non inserisce un numero valido
+        while (true) {
+            System.out.print("\nScegli la proiezione da eliminare in modo definitivo (0 per annullare): ");
+            try {
+                int scelta = Integer.parseInt(scanner.nextLine());
                 
-                // Controllo prenotazioni esistenti (Specifiche pag. 13)
-                if (haPrenotazioni(p)) {
-                    System.out.println("Errore: Non puoi eliminare una proiezione che ha già delle prenotazioni!");
-                    return;
+                if (scelta == 0) {
+                    System.out.println("Eliminazione annullata. Ritorno al menu principale.");
+                    return; // Esce dal ciclo e dal metodo
+                } else if (scelta > 0 && scelta <= risultati.size()) {
+                    Proiezione p = risultati.get(scelta - 1);
+                    
+                    // Controllo prenotazioni esistenti (Specifiche pag. 13)
+                    if (haPrenotazioni(p)) {
+                        System.out.println("Errore: Non puoi eliminare una proiezione che ha già delle prenotazioni!");
+                        return;
+                    }
+                    
+                    // --- IL TUO CODICE DI ELIMINAZIONE INVARIATO ---
+                    gestoreProiezioni.eliminaProiezione(p);
+                    System.out.println("Proiezione eliminata con successo dal palinsesto!");
+                    
+                    return; // Eliminazione fatta, usciamo dal ciclo
+                } else {
+                    // Messaggio di errore se mette un numero sballato
+                    System.out.println("Errore: devi inserire uno dei numeri in elenco (da 1 a " + risultati.size() + ") oppure 0 per tornare al menu.");
                 }
-                
-                gestoreProiezioni.eliminaProiezione(p);
-                System.out.println("Proiezione eliminata con successo dal palinsesto!");
+            } catch (NumberFormatException e) {
+                System.out.println("Input non valido. Inserisci un numero.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Input non valido.");
         }
     }
 

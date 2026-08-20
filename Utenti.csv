@@ -1,5 +1,9 @@
-Davide,Colombo,scolopendra,cGFzc3dvcmQ=,15-02-2005,Vedano Olona,CLIENTE
 
-Mario,Rossi,supermario,MTIzNA==,1980-04-25,Milano,CLIENTE
-Luigi,Bianchi,luigino,MTIzNA==,1969-05-08,Varese,PROIEZIONISTA
-Luca,Verdi,luchino,MTIzNA==,1999-06-02,Como,BIGLIETTAIO
+Mario,Rossi,mario1,MTIzNA==,1980-04-25,Milano,CLIENTE
+Luigi,Bianchi,luigi1,MTIzNA==,1969-05-08,Varese,PROIEZIONISTA
+Luca,Verdi,luca1,MTIzNA==,1999-06-02,Como,BIGLIETTAIO
+Lorenzo,Ferri,lorenzo1,MTIzNA==,2000-12-30,Varese,PROIEZIONISTA
+Stefano,Gallo,stefano1,MTIzNA==,2002-03-17,Como,BIGLIETTAIO
+Domenico,Ferrari,domenico1,MTIzNA==,1999-10-13,Milano,BIGLIETTAIO
+Marco,Riva,marco1,MTIzNA==,1991-11-11,Milano,BIGLIETTAIO
+Matteo,Russo,matteo1,MTIzNA==,1995-10-1,Varese,BIGLIETTAIO
