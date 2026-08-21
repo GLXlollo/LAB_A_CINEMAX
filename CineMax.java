@@ -12,6 +12,11 @@ public class CineMax {
     private static GestorePrenotazioni gestorePrenotazioni = new GestorePrenotazioni(); 
     private static Utente utenteLoggato = null;
 
+    /**
+     * Metodo principale che avvia l'applicazione CineMax.
+     * Presenta un menu di login con tre opzioni: login utente registrato, registrazione nuovo utente, accesso guest.
+     * Sincronizza i posti occupati all'avvio leggendo lo storico prenotazioni.
+     */
     public static void main(String[] args) {
 
         // Sincronizza i database all'avvio per ricalcolare i posti corretti
@@ -50,6 +55,11 @@ public class CineMax {
         scanner.close();
     }
 
+    /**
+     * Gestisce il processo di login per gli utenti registrati.
+     * Richiede username e password, autentica l'utente e lo indirizza al menu appropriato in base al suo ruolo (Cliente, Proiezionista, Bigliettaio).
+     * Effettua automaticamente il logout dopo il completamento delle operazioni.
+     */
     private static void eseguiLogin() {
         System.out.print("Username: ");
         String username = scanner.nextLine();
@@ -79,6 +89,10 @@ public class CineMax {
         }
     }
 
+    /**
+     * Presenta il menu principale per i clienti.
+     * Consente di cercare e prenotare proiezioni, visualizzare le proprie prenotazioni, modificarle o eliminarle.
+     */
     // --- MENU CLIENTE ---
     private static void menuCliente() {
         boolean esci = false;
@@ -106,6 +120,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Permette al cliente di cercare film per titolo e prenotare biglietti.
+     * Visualizza le proiezioni future corrispondenti al titolo inserito e consente di selezionare una per completare la prenotazione.
+     * Controlla la disponibilità di posti prima di confermare la prenotazione.
+     */
     private static void eseguiPrenotazioneCliente() {
         GestoreProiezioni future = gestoreProiezioni.futureProiz();
         String filtro = "";
@@ -161,6 +180,10 @@ public class CineMax {
         }
     }
 
+    /**
+     * Visualizza tutte le prenotazioni effettuate dal cliente attualmente loggato.
+     * Mostra i dettagli completi di ogni prenotazione oppure comunica se non ci sono prenotazioni.
+     */
     private static void visualizzaPrenotazioniCliente() {
         System.out.println("\n--- Le tue Prenotazioni ---");
         List<Prenotazione> miePrenotazioni = gestorePrenotazioni.getPrenotazioniPerUtente(utenteLoggato.getUsername());
@@ -174,6 +197,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Consente al cliente di cancellare una sua prenotazione.
+     * Richiede il codice univoco della prenotazione, verifica che appartenga al cliente e che la proiezione non sia già avvenuta.
+     * Libera i posti precedentemente occupati e rimuove la prenotazione dal sistema.
+     */
     private static void eseguiEliminaPrenotazioneCliente() {
         System.out.print("\nInserisci il CODICE della prenotazione da cancellare: ");
         String codice = scanner.nextLine();
@@ -206,6 +234,11 @@ public class CineMax {
         System.out.println("Prenotazione " + codice + " eliminata con successo! I posti sono stati liberati.");
     }
 
+    /**
+     * Permette al cliente di modificare la data e l'ora di una sua prenotazione.
+     * Verifica che la prenotazione appartenga al cliente, che non sia per un film già passato, e che la nuova proiezione abbia posti disponibili.
+     * Libera i posti dalla vecchia proiezione e li occupa nella nuova.
+     */
     private static void eseguiModificaPrenotazioneCliente() {
         System.out.print("\nInserisci il CODICE della prenotazione da modificare: ");
         String codice = scanner.nextLine();
@@ -294,6 +327,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Gestisce il processo di registrazione di nuovi utenti.
+     * Richiede la scelta del tipo di account (Cliente, Proiezionista, Bigliettaio) e, per i dipendenti, verifica il PIN aziendale.
+     * Raccoglie i dati personali e crea un nuovo account nel sistema.
+     */
     private static void eseguiRegistrazione() {
         System.out.println("\n--- Registrazione Nuovo Utente ---");
         
@@ -353,6 +391,10 @@ public class CineMax {
         gestoreUtenti.registraUtente(nome, cognome, username, password, dataNascita, domicilio, ruoloScelto);
     }
 
+    /**
+     * Presenta il menu per gli utenti guest (non registrati).
+     * Consente la ricerca di proiezioni per titolo, genere o data, senza possibilità di prenotare.
+     */
     // --- MENU GUEST ---
     private static void menuGuest() {
         boolean esci = false;
@@ -378,6 +420,12 @@ public class CineMax {
         }
     }
 
+    /**
+     * Esegue una ricerca di proiezioni future in base al tipo di ricerca specificato.
+     * Supporta tre modalità: ricerca per titolo, ricerca per genere, ricerca per intervallo di date.
+     * Visualizza i risultati e consente di selezionare una proiezione per vederne i dettagli completi.
+     * @param tipoRicerca il tipo di ricerca da eseguire: "TITOLO", "GENERE" o "DATA"
+     */
     private static void eseguiRicercaGuest(String tipoRicerca) {
         GestoreProiezioni future = gestoreProiezioni.futureProiz();
         String filtro = "";
@@ -522,6 +570,11 @@ public class CineMax {
         }  
     }
 
+    /**
+     * Visualizza i dettagli completi di una proiezione.
+     * Mostra titolo, genere, regista, anno, durata, data/ora, costo biglietto e posti liberi disponibili.
+     * @param p la proiezione di cui visualizzare i dettagli
+     */
     private static void visualizzaProiezione(Proiezione p) {
         System.out.println("\n--- Dettagli Proiezione ---");
         System.out.println("Titolo: " + p.getTitolo());
@@ -535,6 +588,10 @@ public class CineMax {
         System.out.println("---------------------------");
     }
 
+    /**
+     * Presenta il menu principale per i bigliettai.
+     * Consente di visualizzare le prenotazioni di oggi e di cercare prenotazioni specifiche per codice, titolo o cliente.
+     */
     // --- MENU BIGLIETTAIO ---
     private static void menuBigliettaio() {
         boolean esci = false;
@@ -563,6 +620,10 @@ public class CineMax {
         }
     }
 
+    /**
+     * Visualizza tutte le prenotazioni per le proiezioni in programma oggi.
+     * Recupera la data odierna dal sistema e filtra le prenotazioni per quella data.
+     */
     private static void visualizzaPrenotazioniOggi() {
         // Recupera la data odierna automaticamente dal sistema
         String oggi = LocalDate.now().toString(); 
@@ -583,6 +644,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Consente al bigliettaio di cercare prenotazioni nel sistema.
+     * Supporta tre criteri di ricerca: per codice prenotazione, per titolo film, per nome o cognome cliente.
+     * Visualizza i dettagli di tutte le prenotazioni corrispondenti ai criteri inseriti.
+     */
     private static void cercaPrenotazioneBigliettaio() {
         // Usiamo il ciclo instead della ricorsione!
         while (true) {
@@ -644,6 +710,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Stampa a schermo i dettagli completi di una prenotazione.
+     * Mostra codice, cliente, film, orario, numero di biglietti, costo unitario e costo totale.
+     * @param p la prenotazione di cui stampare i dettagli
+     */
     // Visualizzazione dettagliata della prenotazione
     private static void stampaDettagliPrenotazione(Prenotazione p) {
         Utente u = gestoreUtenti.getUtenteByUsername(p.getUsernameCliente());
@@ -657,6 +728,10 @@ public class CineMax {
         System.out.println("-------------------------------------------------");
     }
 
+    /**
+     * Presenta il menu principale per i proiezionisti.
+     * Consente di aggiungere, modificare o eliminare proiezioni dal palinsesto.
+     */
     // --- MENU PROIEZIONISTA ---
     private static void menuProiezionista() {
         boolean esci = false;
@@ -682,6 +757,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Permette al proiezionista di aggiungere una nuova proiezione al palinsesto.
+     * Richiede data/ora, titolo, genere, regista, anno, durata, fascia d'età e costo del biglietto.
+     * Verifica che non esista già una proiezione nella stessa data e ora e salva i dati nel sistema.
+     */
     private static void eseguiAggiungiProiezione() {
         System.out.println("\n--- Aggiungi Proiezione ---");
         LocalDateTime dataOra = leggiDataOra("Data e Ora della nuova proiezione");
@@ -712,6 +792,11 @@ public class CineMax {
         System.out.println("Proiezione aggiunta con successo e salvata nel palinsesto!");
     }
 
+    /**
+     * Permette al proiezionista di modificare la data e l'ora di una proiezione esistente.
+     * Verifica che non ci siano prenotazioni attive sulla proiezione prima di permettere la modifica.
+     * Aggiorna la data e l'ora nel sistema e salva le modifiche nel file.
+     */
     private static void eseguiModificaProiezione() {
         System.out.print("\nInserisci il titolo del film da modificare: ");
         String titolo = scanner.nextLine();
@@ -761,6 +846,11 @@ public class CineMax {
         }
     }
 
+    /**
+     * Permette al proiezionista di eliminare una proiezione dal palinsesto.
+     * Verifica che non ci siano prenotazioni attive sulla proiezione prima di permettere l'eliminazione.
+     * Rimuove la proiezione dal sistema e salva le modifiche nel file.
+     */
     private static void eseguiEliminaProiezione() {
         System.out.print("\nInserisci il titolo del film da eliminare dal palinsesto: ");
         String titolo = scanner.nextLine();
@@ -808,6 +898,12 @@ public class CineMax {
         }
     }
 
+    /**
+     * Verifica se esiste almeno una prenotazione attiva per una determinata proiezione.
+     * Utilizzato per bloccare la modifica o l'eliminazione di una proiezione che ha già biglietti venduti.
+     * @param p la proiezione da controllare
+     * @return true se ci sono prenotazioni attive, false altrimenti
+     */
     // Metodo di supporto per bloccare modifiche/cancellazioni se ci sono biglietti venduti
     private static boolean haPrenotazioni(Proiezione p) {
         for (Prenotazione pren : gestorePrenotazioni.getTutteLePrenotazioni()) {
@@ -818,6 +914,11 @@ public class CineMax {
         return false;
     }
 
+    /**
+     * Sincronizza lo stato dei posti occupati nelle proiezioni leggendo lo storico delle prenotazioni.
+     * Eseguito all'avvio dell'applicazione per ricalcolare i posti corretti in caso di chiusure impreviste.
+     * Ripete tutte le prenotazioni storiche per ricalcolare lo stato di ogni proiezione.
+     */
     // All'avvio del programma, ricalcola i posti occupati leggendoli dallo storico prenotazioni
     private static void sincronizzaPostiOccupati() {
         for (Prenotazione p : gestorePrenotazioni.getTutteLePrenotazioni()) {
@@ -829,6 +930,13 @@ public class CineMax {
         }
     }
 
+    /**
+     * Legge una data da input dell'utente con validazione del formato.
+     * Il formato richiesto è AAAA-MM-GG (ad es. 2026-05-15).
+     * Continua a chiedere l'input finché l'utente non inserisce una data valida.
+     * @param messaggio il messaggio da visualizzare prima di richiedere la data
+     * @return la LocalDate parsificata e validata
+     */
     // --- METODI DI SUPPORTO PER VALIDAZIONE DATE ---
     
     protected static LocalDate leggiData(String messaggio) {
@@ -846,6 +954,13 @@ public class CineMax {
         }
     }
 
+    /**
+     * Legge una data e un'ora da input dell'utente con validazione del formato.
+     * Il formato richiesto è AAAA-MM-GG HH:MM (ad es. 2026-05-15 21:30).
+     * Continua a chiedere l'input finché l'utente non inserisce una data e ora valide.
+     * @param messaggio il messaggio da visualizzare prima di richiedere la data e l'ora
+     * @return la LocalDateTime parsificata e validata
+     */
     private static LocalDateTime leggiDataOra(String messaggio) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         while (true) {
@@ -862,6 +977,13 @@ public class CineMax {
         }
     }
 
+    /**
+     * Legge un numero intero positivo da input dell'utente con validazione.
+     * Continua a chiedere l'input finché l'utente non inserisce un numero intero valido.
+     * @param messaggio il messaggio da visualizzare prima di richiedere il numero
+     * @param consentiZero se true, accetta anche lo zero; se false, richiede un numero strettamente positivo
+     * @return il numero intero validato
+     */
     // --- METODI DI SUPPORTO PER VALIDAZIONE NUMERI ---
 
     private static int leggiInteroPositivo(String messaggio, boolean consentiZero) {
@@ -880,6 +1002,13 @@ public class CineMax {
         }
     }
 
+    /**
+     * Legge un numero decimale positivo da input dell'utente con validazione.
+     * Accetta sia il punto che la virgola come separatore decimale.
+     * Continua a chiedere l'input finché l'utente non inserisce un numero decimale valido.
+     * @param messaggio il messaggio da visualizzare prima di richiedere il numero
+     * @return il numero decimale validato (>= 0)
+     */
     private static double leggiDoublePositivo(String messaggio) {
         while (true) {
             System.out.print(messaggio);

@@ -3,23 +3,38 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+/**
+ * Gestisce gli utenti del sistema CineMax.
+ * Carica, registra e autentica gli utenti dal file CSV.
+ * Supporta la cifratura Base64 delle password per la sicurezza.
+ */
 public class GestoreUtenti {
     // Specifica: file denominato Utenti
     private static final String FILE_UTENTI = "Utenti.csv"; 
     private static final String DELIMITATORE = ",";
     private List<Utente> listaUtenti;
 
+    /**
+     * Costruttore che inizializza il gestore e carica tutti gli utenti dal file CSV.
+     */
     public GestoreUtenti() {
         listaUtenti = new ArrayList<>();
         caricaUtentiDaCSV();
     }
 
-    // Metodo per cifrare la password come da specifiche
+    /**
+     * Cifra una password utilizzando la codifica Base64 come richiesto dalle specifiche.
+     * @param password la password in chiaro
+     * @return la password cifrata in Base64
+     */
     private String cifraPassword(String password) {
         return Base64.getEncoder().encodeToString(password.getBytes());
     }
 
-    // Carica gli utenti in memoria all'avvio dell'applicazione
+    /**
+     * Carica tutti gli utenti dal file CSV e li mantiene in memoria.
+     * Se il file non esiste, visualizza un messaggio di avviso.
+     */
     private void caricaUtentiDaCSV() {
         File file = new File(FILE_UTENTI);
         if (!file.exists()) {
@@ -48,7 +63,11 @@ public class GestoreUtenti {
             System.out.println("Errore durante la lettura del file Utenti.csv");
         }
     }
-    // Metodo di supporto per formattare la riga CSV
+    /**
+     * Formatta e scrive una riga CSV per un utente nel file.
+     * @param pw il PrintWriter del file CSV
+     * @param u l'utente da scrivere
+     */
     private void scriviRigaUtente(PrintWriter pw, Utente u) {
         pw.println(u.getNome() + DELIMITATORE + 
                    u.getCognome() + DELIMITATORE + 
@@ -59,7 +78,17 @@ public class GestoreUtenti {
                    u.getRuolo().name());
     }
 
-    // Funzionalità di registrazione utente: scrive SUBITO nel CSV
+    /**
+     * Registra un nuovo utente nel sistema.
+     * Verifica l'unicita dello username, crea l'account con il ruolo specificato e lo salva immediatamente nel CSV.
+     * @param nome il nome dell'utente
+     * @param cognome il cognome dell'utente
+     * @param username lo username univoco dell'utente
+     * @param password la password in chiaro (sara cifrata)
+     * @param dataNascita la data di nascita dell'utente
+     * @param luogoDomicilio il luogo di domicilio dell'utente
+     * @param ruolo il ruolo dell'utente (CLIENTE, PROIEZIONISTA, BIGLIETTAIO)
+     */
     public void registraUtente(String nome, String cognome, String username, String password, 
                                 String dataNascita, String luogoDomicilio, Ruolo ruolo) {
         
@@ -87,7 +116,13 @@ public class GestoreUtenti {
         }
     }
 
-    // Funzionalità di login
+    /**
+     * Autentica un utente verificando le credenziali.
+     * La password viene cifrata e confrontata con quella memorizzata.
+     * @param username lo username dell'utente
+     * @param password la password in chiaro
+     * @return l'oggetto Utente se le credenziali sono corrette, null altrimenti
+     */
     public Utente login(String username, String password) {
         String pwdCifrata = cifraPassword(password);
         for (Utente u : listaUtenti) {
@@ -100,7 +135,11 @@ public class GestoreUtenti {
         return null; // Login fallito
     }
 
-    // Recupera l'oggetto Utente partendo dallo username (serve al bigliettaio)
+    /**
+     * Recupera un utente cercandolo per username.
+     * @param username lo username dell'utente da cercare
+     * @return l'oggetto Utente trovato, o null se non esiste
+     */
     public Utente getUtenteByUsername(String username) {
         for (Utente u : listaUtenti) {
             if (u.getUsername().equals(username)) {

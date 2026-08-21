@@ -11,21 +11,38 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 
+/**
+ * Gestisce le proiezioni cinematografiche.
+ * Carica, crea, modifica ed elimina proiezioni dal file CSV.
+ * Fornisce metodi di ricerca per titolo, genere, data e per le proiezioni future.
+ */
 public class GestoreProiezioni {
     // Il nome del file indicato dalle specifiche
     private static final String FILE_PROIEZIONI = "proiezioni.csv"; 
     private static final String DELIMITATORE = ","; // Modifica se il file fornito usa la virgola
     private List<Proiezione> listaProiezioni;
 
+    /**
+     * Costruttore che inizializza il gestore e carica tutte le proiezioni dal file CSV.
+     */
     public GestoreProiezioni() {
         listaProiezioni = new ArrayList<>();
         caricaProiezioniDaCSV();
     }
 
+    /**
+     * Costruttore alternativo che inizializza il gestore con una lista di proiezioni fornita.
+     * Utilizzato per creare un gestore con un sottoinsieme di proiezioni (es. proiezioni future).
+     * @param inpuArrayList la lista di proiezioni da utilizzare
+     */
     public GestoreProiezioni(List<Proiezione> inpuArrayList) {
         listaProiezioni = inpuArrayList;
     }
 
+    /**
+     * Carica tutte le proiezioni dal file CSV e le mantiene in memoria.
+     * Gestisce i casi in cui il titolo contiene virgole (delimitatore) creando un array di 9 campi.
+     */
     private void caricaProiezioniDaCSV() {
         File file = new File(FILE_PROIEZIONI);
         if (!file.exists()) {
@@ -92,7 +109,12 @@ public class GestoreProiezioni {
         }
     }
 
-    // Ricerca parziale per titolo (Funzionalità Guest)
+    /**
+     * Cerca le proiezioni in base a una ricerca parziale del titolo.
+     * La ricerca è case-insensitive e accetta sottostringhe.
+     * @param titoloCercato il titolo o parte del titolo da cercare
+     * @return una lista di proiezioni che corrispondono al criterio
+     */
     public List<Proiezione> cercaPerTitolo(String titoloCercato) {
         List<Proiezione> risultati = new ArrayList<Proiezione>();
         String titoloLower = titoloCercato.toLowerCase();
@@ -118,7 +140,12 @@ public class GestoreProiezioni {
         return risultati;
     }
     
-    // Ricerca tra 2 date (Funzionalità Guest)
+    /**
+     * Cerca le proiezioni che si svolgono tra due date specifiche (escluse gli estremi).
+     * @param DataInizio la data di inizio intervallo
+     * @param DataFine la data di fine intervallo
+     * @return una lista di proiezioni che ricadono nel periodo specificato
+     */
     public List<Proiezione> cercaTraDate(LocalDate DataInizio, LocalDate DataFine) {
         List<Proiezione> risultati = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -130,6 +157,11 @@ public class GestoreProiezioni {
         return risultati;
     }
 
+    /**
+     * Cerca le proiezioni che si svolgono dopo una data specifica.
+     * @param DataInizio la data di inizio
+     * @return una lista di proiezioni dopo la data specifica
+     */
     public List<Proiezione> cercaDopoInizio(LocalDate DataInizio) {
         List<Proiezione> risultati = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -141,7 +173,12 @@ public class GestoreProiezioni {
         return risultati;
     }
 
-    public List<Proiezione> cercaPrimaFine( LocalDate DataFine) {
+    /**
+     * Cerca le proiezioni che si svolgono prima di una data specifica.
+     * @param DataFine la data di fine
+     * @return una lista di proiezioni prima della data specifica
+     */
+    public List<Proiezione> cercaPrimaFine(LocalDate DataFine) {
         List<Proiezione> risultati = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (Proiezione p : listaProiezioni) {
@@ -153,22 +190,39 @@ public class GestoreProiezioni {
     }
 
 
-    // Ritorna l'intera lista (ci servirà in seguito)
+    /**
+     * Restituisce l'intera lista di proiezioni caricata in memoria.
+     * @return la lista completa di tutte le proiezioni
+     */
     public List<Proiezione> getListaProiezioni() {
         return listaProiezioni;
     }
 
+    /**
+     * Aggiunge una nuova proiezione al palinsesto.
+     * Salva la proiezione in memoria e aggiorna il file CSV.
+     * @param p la proiezione da aggiungere
+     */
     // --- METODI PER IL PROIEZIONISTA ---
     public void aggiungiProiezione(Proiezione p) {
         listaProiezioni.add(p);
         riscriviFileCSV();
     }
 
+    /**
+     * Elimina una proiezione dal palinsesto.
+     * Rimuove la proiezione in memoria e aggiorna il file CSV.
+     * @param p la proiezione da eliminare
+     */
     public void eliminaProiezione(Proiezione p) {
         listaProiezioni.remove(p);
         riscriviFileCSV();
     }
 
+    /**
+     * Riscrive l'intero file CSV delle proiezioni con i dati correnti in memoria.
+     * Utilizzato dopo modifiche, aggiunte o eliminazioni di proiezioni.
+     */
     public void riscriviFileCSV() {
         try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_PROIEZIONI, false))) {
             // Riscrivo l'intestazione
@@ -189,6 +243,10 @@ public class GestoreProiezioni {
         } 
     }
 
+    /**
+     * Restituisce un nuovo GestoreProiezioni contenente solo le proiezioni future (dopo l'ora attuale).
+     * @return un GestoreProiezioni con le sole proiezioni future
+     */
     public GestoreProiezioni futureProiz() {
         List<Proiezione> future = new ArrayList<Proiezione>();
         for (Proiezione p : listaProiezioni) {
