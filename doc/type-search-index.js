@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"src","l":"CineMax"},{"p":"src","l":"GestorePrenotazioni"},{"p":"src","l":"GestoreProiezioni"},{"p":"src","l":"GestoreUtenti"},{"p":"src","l":"Prenotazione"},{"p":"src","l":"Proiezione"},{"p":"src","l":"Utente"}];updateSearchResults();
