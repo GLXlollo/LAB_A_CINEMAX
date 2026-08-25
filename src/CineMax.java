@@ -135,55 +135,62 @@ public class CineMax {
      */
     private static void eseguiPrenotazioneCliente() {
         GestoreProiezioni future = gestoreProiezioni.futureProiz();
-        String filtro = "";
-        System.out.print("\nInserisci il titolo del film: ");
-        filtro = scanner.nextLine().toLowerCase();
-        List<Proiezione> titolo = future.cercaPerTitolo(filtro);
-        boolean esci = false;
-        while(!esci) {
-            int count = 0;
-            try {
-                if(titolo.isEmpty()) {  
-                    System.out.println("Nessuna proiezione futura trovata per questa ricerca.");
-                    System.out.println("Desideri riprovare?");
-                    System.out.println("1: Sì");
-                    System.out.println("2: No (Torna al menù guest)");
+        
+        // Ciclo esterno: racchiude l'intera operazione di ricerca
+        while (true) {
+            System.out.print("\nInserisci il titolo del film: ");
+            String filtro = scanner.nextLine().toLowerCase().trim();
+            List<Proiezione> titolo = future.cercaPerTitolo(filtro);
+            
+            // 1. Controllo se la lista è vuota
+            if (titolo.isEmpty()) {  
+                System.out.println("Nessuna proiezione futura trovata per questa ricerca.");
+                System.out.println("Desideri riprovare?");
+                System.out.println("1: Sì");
+                System.out.println("2: No (Torna al menu)");
 
-                    String esito = scanner.nextLine();
-                    switch(esito) {
-                        case "1": eseguiPrenotazioneCliente(); break;
-                        case "2": return;
-                        default: System.out.println("Opzione non valida."); break;
-                    }
+                String esito = scanner.nextLine().trim();
+                if (esito.equals("1")) {
+                    continue; // Riavvia il ciclo dall'inizio senza creare ricorsione!
+                } else {
+                    return; // Esce definitivamente dal metodo
                 }
-                    
+            }
+            
+            // 2. Se arriviamo qui, il film è stato trovato. Gestiamo la scelta.
+            boolean esci = false;
+            while (!esci) {
+                int count = 0;
                 for (Proiezione proiezione : titolo) {
                     System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
                     count++;
                 }
+                
                 System.out.print("\nScegli la proiezione per vedere i dettagli e prenotare (o 0 per annullare): ");
-                int scelta = Integer.parseInt(scanner.nextLine());
-                
-                if (scelta == 0) {
-                    System.out.println("Prenotazione annullata. Ritorno al menu.");
-                    return; // Esce e torna al menu cliente
-                } else if (scelta > 0 && scelta <= titolo.size()) {
-                    Proiezione p = titolo.get(scelta - 1);
-                    visualizzaProiezione(p); 
-                
-                    // Usiamo il nostro validatore per impedire numeri negativi!
-                    int numBiglietti = leggiInteroPositivo("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ", true);
-                
-                    if (numBiglietti > 0) {
-                        gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
+                try {
+                    int scelta = Integer.parseInt(scanner.nextLine().trim());
+                    
+                    if (scelta == 0) {
+                        System.out.println("Prenotazione annullata. Ritorno al menu.");
+                        return; // Esce e torna al menu cliente
+                    } else if (scelta > 0 && scelta <= titolo.size()) {
+                        Proiezione p = titolo.get(scelta - 1);
+                        visualizzaProiezione(p); 
+                    
+                        // Usiamo il nostro validatore per impedire numeri negativi!
+                        int numBiglietti = leggiInteroPositivo("\nQuanti biglietti vuoi prenotare per questo film? (0 per annullare): ", true);
+                    
+                        if (numBiglietti > 0) {
+                            gestorePrenotazioni.creaPrenotazione(utenteLoggato.getUsername(), p, numBiglietti);
+                        }
+                        
+                        return; // PRENOTAZIONE COMPLETATA: Usciamo subito da tutto il metodo!
+                    } else {
+                        System.out.println("Errore: devi inserire uno dei numeri in elenco (da 1 a " + titolo.size() + ") oppure 0 per annullare.\n");
                     }
-                    esci = true;
-                } else {
-                    // Stampa l'errore e non cambia "esci". Il while ripartirà e stamperà di nuovo la lista!
-                    System.out.println("Errore: devi inserire uno dei numeri in elenco (da 1 a " + titolo.size() + ") oppure 0 per annullare.\n");
+                } catch (NumberFormatException e) {
+                    System.out.println("Input non valido. Inserisci un numero.");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Input non valido. Inserisci un numero.");
             }
         }
     }
@@ -518,29 +525,35 @@ public class CineMax {
             }
         } else if (tipoRicerca.equals("DATA")) {
             
-            System.out.println("Cerca film TRA due date");
-            System.out.println("Desideri usare la data odierna come prima data?");
-            System.out.println("1) Sì");
-            System.out.println("2) No");
-            boolean esci = false;
+            System.out.println("\n--- Cerca film TRA due date ---");
             LocalDate dataInizio = LocalDate.now();
-            while(!esci) {
-                String esito = scanner.nextLine();
+            
+            // Ciclo infinito che ripete la domanda finché non sceglie 1 o 2
+            while(true) {
+                System.out.println("Desideri usare la data odierna (" + dataInizio + ") come prima data?");
+                System.out.println("1) Sì");
+                System.out.println("2) No");
+                System.out.print("Scegli un'opzione (1 o 2): ");
                 
-                switch(esito) {
-                    case "1": esci=true; break;
-                    case "2": {
-                         dataInizio = leggiData("Inserisci la data");
-                        esci=true; 
-                        break;
-                    }
-                    default: System.out.println("Opzione non valida.");
+                String esito = scanner.nextLine().trim(); 
+                
+                if (esito.equals("1")) {
+                    break; // Esce dal ciclo e usa dataInizio (che è già impostata a oggi)
+                } else if (esito.equals("2")) {
+                    dataInizio = leggiData("Inserisci la prima data");
+                    break; // Esce dal ciclo e usa la data inserita dall'utente
+                } else {
+                    System.out.println("\nErrore: Opzione non valida. Devi inserire 1 oppure 2.\n");
                 }
             }
+            
             System.out.println("Inserisci la seconda data: ");
-            LocalDate dataFine=leggiData("Inserisci la data");
+            LocalDate dataFine = leggiData("Inserisci la seconda data"); // <-- Nota: ho aggiunto "seconda" al testo
             List<Proiezione> titolo = gestoreProiezioni.cercaTraDate(dataInizio, dataFine);
-            esci = false;
+            
+            // ... (da qui in poi il codice rimane invariato con il "while(!esci)" per i risultati) ...
+            
+            boolean esci = false;
             while(!esci) {
                 int count = 0;
                 try {
@@ -550,29 +563,39 @@ public class CineMax {
                         System.out.println("1: Sì");
                         System.out.println("2: No (Torna al menù guest)");
 
-                        String esito = scanner.next();
+                        // CORREZIONE 2: nextLine() invece di next()
+                        String esito = scanner.nextLine().trim(); 
                         switch(esito) {
-                            case "1": eseguiRicercaGuest(tipoRicerca); break;
-                            case "2": return;
-                            default: System.out.println("Opzione non valida."); break;
+                            case "1": 
+                                eseguiRicercaGuest(tipoRicerca); 
+                                return; // CORREZIONE 3: return invece di break per evitare l'inception
+                            case "2": 
+                                return;
+                            default: 
+                                System.out.println("Opzione non valida."); 
+                                break;
+                        }
+                    } else { // Mettiamo un else per non fargli stampare il menu vuoto se fallisce la ricerca
+                        for (Proiezione proiezione : titolo) {
+                            System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
+                            count++;
+                        }
+                        
+                        System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
+                        // CORREZIONE 4: nextLine() invece di next()
+                        int scelta = Integer.parseInt(scanner.nextLine().trim()); 
+                        
+                        if (scelta > 0 && scelta <= titolo.size()) {
+                            visualizzaProiezione(titolo.get(scelta - 1));
+                            esci = true; // Esce e torna al menu guest in modo pulito
+                        } else if (scelta != 0) {
+                            System.out.println("\nScelta non valida.\n");
+                        } else if (scelta == 0) {
+                            break;
                         }
                     }
-                    for (Proiezione proiezione : titolo) {
-                    System.out.println((count + 1) + ". " + proiezione.getTitolo() + " - " + proiezione.getDataOra());
-                    count++;
-                    }
-                    System.out.print("\nInserisci il numero della proiezione per i dettagli (o 0 per annullare): ");
-                    int scelta = Integer.parseInt(scanner.next());
-                    if (scelta > 0 && scelta <= titolo.size()) {
-                    visualizzaProiezione(titolo.get(scelta - 1));
-                    esci=true;
-                    } else if (scelta != 0) {
-                    System.out.println("\nScelta non valida.\n");
-                    } else if (scelta == 0) {
-                    break;
-                    }
                 } catch (NumberFormatException e) {
-                System.out.println("\nInput non valido. Inserisci un numero.\n");
+                    System.out.println("\nInput non valido. Inserisci un numero.\n");
                 }
             }
         }  
