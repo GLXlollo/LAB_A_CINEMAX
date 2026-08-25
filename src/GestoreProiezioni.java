@@ -1,3 +1,4 @@
+package src;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -18,7 +19,7 @@ import java.io.PrintWriter;
  */
 public class GestoreProiezioni {
     // Il nome del file indicato dalle specifiche
-    private static final String FILE_PROIEZIONI = "proiezioni.csv"; 
+    private static final String FILE_PROIEZIONI = "data/proiezioni.csv"; 
     private static final String DELIMITATORE = ","; // Modifica se il file fornito usa la virgola
     private List<Proiezione> listaProiezioni;
 

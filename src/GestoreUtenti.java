@@ -1,3 +1,4 @@
+package src;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public class GestoreUtenti {
     // Specifica: file denominato Utenti
-    private static final String FILE_UTENTI = "Utenti.csv"; 
+    private static final String FILE_UTENTI = "data/Utenti.csv"; 
     private static final String DELIMITATORE = ",";
     private List<Utente> listaUtenti;
 

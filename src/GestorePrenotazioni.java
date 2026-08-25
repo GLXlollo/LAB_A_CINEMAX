@@ -1,3 +1,4 @@
+package src;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
  * Carica, crea, modifica ed elimina prenotazioni dal file CSV.
  */
 public class GestorePrenotazioni {
-    private static final String FILE_PRENOTAZIONI = "Prenotazioni.csv";
+    private static final String FILE_PRENOTAZIONI = "data/Prenotazioni.csv";
     private static final String DELIMITATORE = ";";
     private List<Prenotazione> listaPrenotazioni;
 

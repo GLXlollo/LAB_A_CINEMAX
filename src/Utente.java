@@ -1,3 +1,4 @@
+package src;
 import java.io.Serializable;
 
 // Enum per definire i ruoli richiesti dalle specifiche
