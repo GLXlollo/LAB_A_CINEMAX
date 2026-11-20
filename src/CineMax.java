@@ -795,7 +795,18 @@ public class CineMax {
      */
     private static void eseguiAggiungiProiezione() {
         System.out.println("\n--- Aggiungi Proiezione ---");
-        LocalDateTime dataOra = leggiDataOra("Data e Ora della nuova proiezione");
+        
+        // Controllo: impedisce di inserire una data/ora nel passato
+        LocalDateTime dataOra;
+        while (true) {
+            dataOra = leggiDataOra("Data e Ora della nuova proiezione");
+            if (dataOra.isBefore(LocalDateTime.now())) {
+                System.out.println("Errore: Non puoi inserire una data e un'ora nel passato!");
+            } else {
+                break;
+            }
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // Controllo sovrapposizione
         for (Proiezione p : gestoreProiezioni.getListaProiezioni()) {
@@ -816,8 +827,6 @@ public class CineMax {
         int eta = leggiInteroPositivo("Età minima (es. 14, usa 0 per tutti): ", true);
         double costo = leggiDoublePositivo("Costo biglietto (es. 8.50): ");
 
-
-        
         Proiezione nuova = new Proiezione(dataOra.format(formatter), titolo, genere, regista, anno, durata, eta, costo);
         gestoreProiezioni.aggiungiProiezione(nuova);
         System.out.println("Proiezione aggiunta con successo e salvata nel palinsesto!");
@@ -860,7 +869,17 @@ public class CineMax {
                         return;
                     }
                     
-                    LocalDateTime nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
+                    // Controllo: impedisce di spostare la proiezione nel passato
+                    LocalDateTime nuovaData;
+                    while (true) {
+                        nuovaData = leggiDataOra("Inserisci la nuova Data e Ora");
+                        if (nuovaData.isBefore(LocalDateTime.now())) {
+                            System.out.println("Errore: Non puoi spostare una proiezione a una data e un'ora nel passato!");
+                        } else {
+                            break;
+                        }
+                    }
+
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     p.setDataOra(nuovaData.format(formatter));
                     gestoreProiezioni.riscriviFileCSV();
